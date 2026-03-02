@@ -32,7 +32,7 @@ function TokenBreakdown({ tokens }: { tokens: string[] }) {
       )}
       {subs > 0 && (
         <span className="text-[10px] flex items-center gap-0.5 whitespace-nowrap">
-          <img src={`${process.env.__NEXT_ROUTER_BASEPATH ?? ""}/yellow-submarine.png`} alt="Sub" className="w-4 h-auto inline" />
+          <img src="/visualization/yellow-submarine.png" alt="Sub" className="w-4 h-auto inline" />
           <span className="text-gray-300 font-mono">x{subs}</span>
         </span>
       )}

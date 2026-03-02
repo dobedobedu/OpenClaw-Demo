@@ -140,7 +140,7 @@ export default function AgentAvatar({
           >
             {visibleToken === "🟡" ? (
               <img
-                src={`${process.env.__NEXT_ROUTER_BASEPATH ?? ""}/yellow-submarine.png`}
+                src="/visualization/yellow-submarine.png"
                 alt="Yellow Submarine"
                 style={{ width: "48px", height: "auto" }}
               />
