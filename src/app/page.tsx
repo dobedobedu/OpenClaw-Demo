@@ -16,7 +16,7 @@ export default async function TradingFloor() {
     <div className="space-y-10">
       {/* Hero */}
       <div className="text-center py-12">
-        <h1 className="font-pixel text-2xl sm:text-3xl text-neon-purple neon-text mb-4">
+        <h1 className="font-pixel text-2xl sm:text-3xl text-neon-purple mb-4">
           4 AGENTS &bull; 6 TICKERS
         </h1>
         <p className="text-gray-400 text-lg">
@@ -90,7 +90,7 @@ export default async function TradingFloor() {
                         </span>
                       </div>
                     </td>
-                    <td className="py-3 px-4 text-right font-pixel text-xs text-neon-amber neon-text">
+                    <td className="py-3 px-4 text-right font-pixel text-xs text-neon-amber neon-text-glow">
                       {entry.elo_rating}
                     </td>
                     <td

@@ -152,27 +152,6 @@ const END_ELO = 1300;
 const TILES_TO_WIN = 75;
 
 function BoardProps({ tile }: { tile: any }) {
-  if (tile.loopIndex === 5) {
-    return (
-      <group position={[0, -0.2, -2]} rotation={[0, tile.angle, 0]}>
-        <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}><Text fontSize={2} position={[0, 1, 0]}>🍓</Text></Float>
-      </group>
-    );
-  }
-  if (tile.loopIndex === 15) {
-    return (
-      <group position={[-2.5, 1, 0]} rotation={[0, tile.angle, 0]}>
-        <Float speed={3} rotationIntensity={0.2} floatIntensity={0.8}><Text fontSize={3}>🤿🟡</Text></Float>
-      </group>
-    );
-  }
-  if (tile.loopIndex === 25) {
-    return (
-      <group position={[0, 1, -2.5]} rotation={[0, tile.angle, 0]}>
-        <Float speed={4} rotationIntensity={0.2} floatIntensity={0.5}><Text fontSize={3}>💎</Text></Float>
-      </group>
-    );
-  }
   if (tile.loopIndex === 35) {
     return (
       <group position={[0, 0.22, 0]}>
@@ -337,7 +316,7 @@ function SteppingNewsCarousel({ newsItems }: { newsItems: typeof NEWS_ITEMS }) {
         <mesh castShadow receiveShadow>
           <cylinderGeometry args={[radius, radius, 1.2, 64, 1, true]} />
           <meshStandardMaterial side={THREE.DoubleSide} roughness={0.2} metalness={0.8} transparent opacity={0.9}>
-            <RenderTexture attach="map" anisotropy={16} width={2048} height={256}>
+            <RenderTexture attach="map" anisotropy={16} width={1024} height={128}>
               <OrthographicCamera makeDefault manual top={1} bottom={-1} left={-15} right={15} position={[0, 0, 5]} />
               <color attach="background" args={["#000000"]} />
               <ambientLight intensity={2} />
@@ -364,7 +343,7 @@ function SteppingNewsCarousel({ newsItems }: { newsItems: typeof NEWS_ITEMS }) {
                 <mesh position={[0, 0, 0]} castShadow receiveShadow>
                   <cylinderGeometry args={[radius, radius, height, 64, 1, true, -segmentAngle / 2, segmentAngle]} />
                   <meshStandardMaterial side={THREE.DoubleSide} roughness={0.1} metalness={0.2} transparent opacity={0.98}>
-                    <RenderTexture attach="map" anisotropy={16} width={2048} height={1024}>
+                    <RenderTexture attach="map" anisotropy={16} width={1024} height={512}>
                       <OrthographicCamera makeDefault manual top={2.5} bottom={-2.5} left={-4} right={4} position={[0, 0, 5]} near={0.1} far={100} />
                       <color attach="background" args={[bgColor]} />
                       <ambientLight intensity={2} /><directionalLight position={[10, 10, 5]} intensity={2} />
@@ -432,10 +411,10 @@ export default function RaceDashboard({ eloHistory, leaderboardData, predictions
       <style dangerouslySetInnerHTML={{__html: `@keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }`}} />
       <div className="absolute inset-0 z-0">
         <Canvas shadows>
-          <ambientLight intensity={0.6} /><directionalLight castShadow position={[10, 30, 10]} intensity={1.5} shadow-mapSize={[2048, 2048]} />
+          <ambientLight intensity={0.6} /><directionalLight castShadow position={[10, 30, 10]} intensity={1.5} shadow-mapSize={[1024, 1024]} />
           <OrthographicCamera makeDefault position={[50, 60, 50]} zoom={20} near={-500} far={500} />
           <OrbitControls ref={controlsRef} target={[0, 10, 0]} makeDefault />
-          <Stars radius={100} depth={50} count={3000} factor={4} saturation={1} fade speed={1} />
+          <Stars radius={100} depth={50} count={1500} factor={4} saturation={1} fade speed={1} />
           <ParadoxBoard /><SteppingNewsCarousel newsItems={newsItems} />
           {(Object.keys(AGENTS_CONFIG) as AgentId[]).map((agentId, idx) => {
             const config = AGENTS_CONFIG[agentId];
@@ -447,10 +426,10 @@ export default function RaceDashboard({ eloHistory, leaderboardData, predictions
       <div className="absolute top-6 left-6 z-50 pointer-events-none">
         <h1 className="text-4xl font-black italic tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-600 drop-shadow-[0_2px_10px_rgba(245,158,11,0.5)]">HERE COMES THE RUN</h1>
         <p className="text-sm text-indigo-300 font-mono mt-1 font-bold">THE AI MARKET PREDICTION RACE.</p>
-        <p className="text-xs text-blue-400 font-bold mt-2 animate-pulse drop-shadow-lg">🖱️ Left Click & Drag to reveal the paradox!</p>
+        <p className="text-xs text-blue-400 font-bold mt-2 animate-pulse drop-shadow-lg">Left Click & Drag to reveal the paradox</p>
       </div>
       <div className="absolute top-36 left-6 z-50">
-        <button onClick={() => { if (controlsRef.current) { controlsRef.current.reset(); controlsRef.current.object.position.set(50, 60, 50); controlsRef.current.target.set(0, 10, 0); } }} className="bg-indigo-900/80 backdrop-blur-md px-4 py-2 rounded-lg border border-indigo-500 hover:bg-indigo-800 transition shadow-[0_0_15px_rgba(99,102,241,0.5)] text-xs font-bold uppercase tracking-widest">Reset Camera</button>
+        <button onClick={() => { if (controlsRef.current) { controlsRef.current.reset(); controlsRef.current.object.position.set(50, 60, 50); controlsRef.current.target.set(0, 10, 0); } }} className="bg-indigo-900/80 backdrop-blur-md px-4 py-2 rounded-lg border border-indigo-500 hover:bg-indigo-800 transition shadow-[0_0_8px_rgba(99,102,241,0.3)] text-xs font-bold uppercase tracking-widest">Reset Camera</button>
       </div>
       <div className="absolute top-6 right-6 flex justify-end z-50 pointer-events-none">
         <div className="flex gap-4 bg-[#0a0616]/80 backdrop-blur-md p-2 rounded-2xl border border-indigo-500/30 shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
@@ -481,9 +460,9 @@ export default function RaceDashboard({ eloHistory, leaderboardData, predictions
           </AnimatePresence>
         </div>
       </div>
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-4xl bg-[#0a0616]/90 backdrop-blur-xl border border-indigo-500/50 p-4 rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(79,70,229,0.3)]">
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-4xl bg-[#0a0616]/90 backdrop-blur-xl border border-indigo-500/50 p-4 rounded-2xl flex items-center justify-center shadow-[0_0_12px_rgba(79,70,229,0.2)]">
         <div className="w-full flex items-center gap-6">
-          <button onClick={() => setSliderIndex(i => Math.min(i + 1, timelineEvents.length))} className="bg-gradient-to-r from-yellow-500 to-orange-500 text-[#060411] font-black px-6 py-4 rounded-lg hover:scale-105 active:scale-95 transition-all shadow-[0_0_15px_rgba(245,158,11,0.5)] disabled:opacity-50 disabled:pointer-events-none uppercase tracking-widest text-sm" disabled={sliderIndex >= timelineEvents.length}>{sliderIndex >= timelineEvents.length ? "MARKET CLOSED" : "NEXT DAY ⏭"}</button>
+          <button onClick={() => setSliderIndex(i => Math.min(i + 1, timelineEvents.length))} className="bg-gradient-to-r from-yellow-500 to-orange-500 text-[#060411] font-black px-6 py-4 rounded-lg hover:scale-105 active:scale-95 transition-all shadow-[0_0_8px_rgba(245,158,11,0.3)] disabled:opacity-50 disabled:pointer-events-none uppercase tracking-widest text-sm" disabled={sliderIndex >= timelineEvents.length}>{sliderIndex >= timelineEvents.length ? "MARKET CLOSED" : "NEXT DAY"}</button>
           <div className="flex-1"><div className="flex justify-between text-xs text-indigo-300 font-mono font-bold mb-3 uppercase tracking-widest"><span>Opening Bell</span><span className="text-yellow-400 font-black">TARGET ELO: 1300</span></div>
             <input type="range" min="0" max={timelineEvents.length} step="0.01" value={sliderIndex} onChange={(e) => setSliderIndex(parseFloat(e.target.value))} className="w-full cursor-pointer h-3 rounded-full appearance-none bg-gray-900 border border-gray-700 shadow-inner" style={{ accentColor: '#facc15', background: `linear-gradient(to right, #facc15 0%, #f97316 ${(sliderIndex / timelineEvents.length) * 100}%, #111827 ${(sliderIndex / timelineEvents.length) * 100}%, #111827 100%)` }} />
           </div>

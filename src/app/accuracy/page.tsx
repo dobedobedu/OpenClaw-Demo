@@ -37,7 +37,7 @@ export default async function AccuracyPage() {
     <div className="space-y-10">
       {/* Hero */}
       <div className="text-center py-8">
-        <h1 className="font-pixel text-xl sm:text-2xl text-neon-purple neon-text mb-2">
+        <h1 className="font-pixel text-xl sm:text-2xl text-neon-purple mb-2">
           ACCURACY HEATMAP
         </h1>
         <p className="text-gray-500 text-sm">
@@ -124,7 +124,6 @@ export default async function AccuracyPage() {
                               style={{
                                 color: accuracyColor(pct),
                                 background: accuracyBg(pct),
-                                textShadow: `0 0 8px ${accuracyColor(pct)}`,
                               }}
                             >
                               {pct}%
@@ -140,7 +139,6 @@ export default async function AccuracyPage() {
                           className="font-pixel text-xs font-bold"
                           style={{
                             color: accuracyColor(overallPct),
-                            textShadow: `0 0 10px ${accuracyColor(overallPct)}`,
                           }}
                         >
                           {overallPct}%
@@ -199,7 +197,6 @@ export default async function AccuracyPage() {
                           style={{
                             width: `${winRate}%`,
                             background: `linear-gradient(90deg, ${agent?.color ?? "#6366f1"}88, ${agent?.color ?? "#6366f1"})`,
-                            boxShadow: `0 0 8px ${agent?.color ?? "#6366f1"}66`,
                           }}
                         />
                       </div>
@@ -209,10 +206,9 @@ export default async function AccuracyPage() {
                       <div>
                         <span className="text-gray-600">ELO</span>
                         <div
-                          className="font-pixel text-[10px] mt-0.5"
+                          className="font-pixel text-[10px] mt-0.5 neon-text-glow"
                           style={{
-                            color: "#f59e0b",
-                            textShadow: "0 0 6px #f59e0b",
+                            color: "#f5a623",
                           }}
                         >
                           {entry.elo_rating}

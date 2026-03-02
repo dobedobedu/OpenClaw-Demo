@@ -10,13 +10,6 @@ interface IsoCubicleProps {
   onClick?: () => void;
 }
 
-const ICON_MAP: Record<string, string> = {
-  guitar: "\u{1F3B8}",
-  piano: "\u{1F3B9}",
-  music: "\u{1F3B5}",
-  drum: "\u{1F941}",
-};
-
 export function IsoCubicle({
   agentId,
   elo,
@@ -32,32 +25,30 @@ export function IsoCubicle({
     0,
     Math.floor(Math.abs(Math.min(0, cumulativeScore)) / 2)
   );
-  const icon = ICON_MAP[agent.icon] || "\u{1F3B5}";
 
   return (
     <div
-      className="glass-card neon-border halftone-bg p-5 cursor-pointer transition-all duration-300 hover:shadow-[0_0_30px_rgba(168,85,247,0.3)] hover:scale-[1.02] group"
+      className="glass-card halftone-bg p-5 cursor-pointer transition-all duration-300 hover:shadow-[0_0_20px_rgba(168,85,247,0.2)] hover:scale-[1.02] group"
       onClick={onClick}
       style={{
-        borderColor: `${agent.color}55`,
-        boxShadow: `0 0 15px ${agent.color}22, inset 0 0 15px ${agent.color}08`,
+        borderColor: `${agent.color}33`,
+        borderWidth: 1,
+        borderStyle: "solid",
+        boxShadow: `0 0 8px ${agent.color}08`,
       }}
     >
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <span className="text-2xl">{icon}</span>
-          <div>
-            <h3
-              className="font-pixel text-xs font-bold"
-              style={{ color: agent.color }}
-            >
-              {agent.name}
-            </h3>
-            <p className="text-[10px] text-gray-500 mt-1">{agent.philosophy}</p>
-          </div>
+        <div>
+          <h3
+            className="font-pixel text-xs font-bold"
+            style={{ color: agent.color }}
+          >
+            {agent.name}
+          </h3>
+          <p className="text-[10px] text-gray-500 mt-1">{agent.philosophy}</p>
         </div>
         <div
-          className="text-right font-pixel text-xs"
+          className="text-right font-pixel text-xs neon-text-glow"
           style={{ color: agent.color }}
         >
           {elo}
@@ -68,7 +59,7 @@ export function IsoCubicle({
       <svg
         viewBox="0 0 200 160"
         className="w-full h-32 mb-4"
-        style={{ filter: `drop-shadow(0 0 6px ${agent.color}44)` }}
+        style={{ filter: `drop-shadow(0 0 3px ${agent.color}33)` }}
       >
         {/* Floor */}
         <polygon
@@ -153,9 +144,9 @@ export function IsoCubicle({
           strokeWidth="0.8"
           opacity="0.4"
         />
-        {/* Agent icon on monitor */}
-        <text x="100" y="60" textAnchor="middle" fontSize="10">
-          {icon}
+        {/* Agent initial on monitor */}
+        <text x="100" y="60" textAnchor="middle" fontSize="10" fill={agent.color} opacity="0.7">
+          {agent.name[0]}
         </text>
         {/* Money stacks */}
         {Array.from({ length: Math.min(moneyStacks, 5) }).map((_, i) => (

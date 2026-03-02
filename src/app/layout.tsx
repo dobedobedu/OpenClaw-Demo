@@ -26,11 +26,11 @@ export const metadata: Metadata = {
 };
 
 const TABS = [
-  { href: "/", label: "Trading Floor", icon: "\u{1F4CA}" },
-  { href: "/race", label: "Race", icon: "\u{1F3C1}" },
-  { href: "/predictions", label: "Predictions", icon: "\u{1F3AF}" },
-  { href: "/accuracy", label: "Accuracy", icon: "\u{1F4C8}" },
-  { href: "/reflections", label: "Reflections", icon: "\u{1FA9E}" },
+  { href: "/", label: "Trading Floor" },
+  { href: "/race", label: "Race" },
+  { href: "/predictions", label: "Predictions" },
+  { href: "/accuracy", label: "Accuracy" },
+  { href: "/reflections", label: "Reflections" },
 ];
 
 export default function RootLayout({
@@ -43,18 +43,18 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${pressStart.variable} antialiased`}
       >
-        <nav className="sticky top-0 z-50 bg-surface/80 backdrop-blur-xl border-b border-neon-indigo/30 shadow-[0_2px_20px_rgba(99,102,241,0.15)]">
+        <nav className="sticky top-0 z-50 bg-surface/80 backdrop-blur-xl border-b border-neon-indigo/30 shadow-[0_1px_8px_rgba(99,102,241,0.1)]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
               <Link href="/" className="flex items-center gap-2">
-                <span className="font-pixel text-sm bg-gradient-to-r from-neon-purple to-neon-amber bg-clip-text text-transparent neon-text">
+                <span className="font-pixel text-sm bg-gradient-to-r from-neon-purple to-neon-amber bg-clip-text text-transparent">
                   BRAIN TRUST
                 </span>
               </Link>
 
               <div className="flex items-center gap-1">
                 {TABS.map((tab) => (
-                  <NavLink key={tab.href} href={tab.href} icon={tab.icon} label={tab.label} />
+                  <NavLink key={tab.href} href={tab.href} label={tab.label} />
                 ))}
               </div>
             </div>

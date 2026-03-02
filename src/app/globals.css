@@ -1,16 +1,20 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-background: #060411;
+  --color-background: #0a0a14;
   --color-foreground: #ededed;
   --color-surface: #0a0616;
   --color-surface-2: #1a1a2e;
   --color-neon-purple: #a855f7;
   --color-neon-indigo: #6366f1;
-  --color-neon-amber: #f59e0b;
+  --color-neon-amber: #f5a623;
   --color-neon-green: #10b981;
   --color-neon-red: #ef4444;
   --color-neon-blue: #3b82f6;
+  --color-agent-john: #f5a623;
+  --color-agent-paul: #a855f7;
+  --color-agent-george: #10b981;
+  --color-agent-ringo: #3b82f6;
   --font-pixel: var(--font-press-start), 'Press Start 2P', monospace;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -23,39 +27,39 @@ body {
   position: relative;
 }
 
-/* CRT Scanline overlay */
-body::after {
+/* Dot-matrix micro-texture */
+body::before {
   content: '';
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 9999;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0, 0, 0, 0.03) 2px,
-    rgba(0, 0, 0, 0.03) 4px
-  );
+  z-index: 1;
+  background-image: radial-gradient(circle, rgba(99,102,241,0.04) 1px, transparent 1px);
+  background-size: 12px 12px;
 }
 
 /* Glass card */
 .glass-card {
   background: rgba(10, 6, 22, 0.8);
   backdrop-filter: blur(16px);
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  border: 1px solid rgba(99, 102, 241, 0.15);
   border-radius: 12px;
+  background-image: radial-gradient(circle, rgba(99,102,241,0.02) 1px, transparent 1px);
+  background-size: 8px 8px;
 }
 
-/* Neon glow border */
+/* Neon glow border — subtle, glow on hover only */
 .neon-border {
-  border: 1px solid rgba(168, 85, 247, 0.4);
-  box-shadow: 0 0 15px rgba(168, 85, 247, 0.15), inset 0 0 15px rgba(168, 85, 247, 0.05);
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  transition: box-shadow 0.2s ease;
+}
+.neon-border:hover {
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.15), inset 0 0 12px rgba(168, 85, 247, 0.04);
 }
 
-/* Neon text glow */
-.neon-text {
-  text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 40px currentColor;
+/* Neon text glow — subtle, for hero ELO numbers only */
+.neon-text-glow {
+  text-shadow: 0 0 8px currentColor;
 }
 
 /* Pixel font utility */
@@ -68,7 +72,7 @@ body::after {
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #060411;
+  background: #0a0a14;
 }
 ::-webkit-scrollbar-thumb {
   background: #6366f1;

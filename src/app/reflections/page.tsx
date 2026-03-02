@@ -22,7 +22,7 @@ export default async function ReflectionsPage({
     <div className="space-y-10">
       {/* Hero */}
       <div className="text-center py-8">
-        <h1 className="font-pixel text-xl sm:text-2xl text-neon-purple neon-text mb-2">
+        <h1 className="font-pixel text-xl sm:text-2xl text-neon-purple mb-2">
           REFLECTIONS
         </h1>
         <p className="text-gray-500 text-sm">
@@ -36,7 +36,7 @@ export default async function ReflectionsPage({
           href="/reflections"
           className={`px-4 py-2 rounded-lg text-xs font-medium transition-all ${
             !filterAgent
-              ? "neon-border bg-neon-purple/10 text-neon-purple"
+              ? "glass-card bg-neon-purple/10 text-neon-purple border border-neon-purple/30"
               : "glass-card text-gray-500 hover:text-gray-300 hover:bg-white/5"
           }`}
         >
@@ -123,10 +123,7 @@ export default async function ReflectionsPage({
                   <div className="rounded-lg bg-white/[0.02] border border-neon-green/20 p-4">
                     <h4
                       className="font-pixel text-[10px] mb-3"
-                      style={{
-                        color: "#10b981",
-                        textShadow: "0 0 8px #10b981",
-                      }}
+                      style={{ color: "#10b981" }}
                     >
                       WHAT WENT WELL
                     </h4>
@@ -139,10 +136,7 @@ export default async function ReflectionsPage({
                   <div className="rounded-lg bg-white/[0.02] border border-neon-red/20 p-4">
                     <h4
                       className="font-pixel text-[10px] mb-3"
-                      style={{
-                        color: "#ef4444",
-                        textShadow: "0 0 8px #ef4444",
-                      }}
+                      style={{ color: "#ef4444" }}
                     >
                       WHAT WENT WRONG
                     </h4>
@@ -155,10 +149,7 @@ export default async function ReflectionsPage({
                   <div className="rounded-lg bg-white/[0.02] border border-neon-amber/20 p-4">
                     <h4
                       className="font-pixel text-[10px] mb-3"
-                      style={{
-                        color: "#f59e0b",
-                        textShadow: "0 0 8px #f59e0b",
-                      }}
+                      style={{ color: "#f5a623" }}
                     >
                       ADJUSTMENTS
                     </h4>

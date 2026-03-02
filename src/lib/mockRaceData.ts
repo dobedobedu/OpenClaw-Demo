@@ -11,10 +11,10 @@ export interface RaceEvent {
 }
 
 export const AGENTS_CONFIG = {
-  john: { name: 'John', color: '#ef4444', icon: '🎸', pixelIcon: '/John.png', startElo: 1000, img: 'https://i.pravatar.cc/150?img=11' },
-  paul: { name: 'Paul', color: '#3b82f6', icon: '🎹', pixelIcon: '/Paul.png', startElo: 1000, img: 'https://i.pravatar.cc/150?img=12' },
-  george: { name: 'George', color: '#f59e0b', icon: '🎵', pixelIcon: '/George.png', startElo: 1000, img: 'https://i.pravatar.cc/150?img=13' },
-  ringo: { name: 'Ringo', color: '#10b981', icon: '🥁', pixelIcon: '/Ringo.png', startElo: 1000, img: 'https://i.pravatar.cc/150?img=14' },
+  john: { name: 'John', color: '#f5a623', pixelIcon: '/visualization/John.png', startElo: 1000, img: 'https://i.pravatar.cc/150?img=11' },
+  paul: { name: 'Paul', color: '#a855f7', pixelIcon: '/visualization/Paul.png', startElo: 1000, img: 'https://i.pravatar.cc/150?img=12' },
+  george: { name: 'George', color: '#10b981', pixelIcon: '/visualization/George.png', startElo: 1000, img: 'https://i.pravatar.cc/150?img=13' },
+  ringo: { name: 'Ringo', color: '#3b82f6', pixelIcon: '/visualization/Ringo.png', startElo: 1000, img: 'https://i.pravatar.cc/150?img=14' },
 };
 
 export const TIMELINE_EVENTS: RaceEvent[] = [

@@ -57,7 +57,7 @@ export default async function PredictionsPage({
         <p className="text-gray-500 text-xs uppercase tracking-widest mb-2">
           Predictions for
         </p>
-        <h1 className="font-pixel text-xl sm:text-2xl text-neon-purple neon-text">
+        <h1 className="font-pixel text-xl sm:text-2xl text-neon-purple">
           {targetDate}
         </h1>
       </div>
