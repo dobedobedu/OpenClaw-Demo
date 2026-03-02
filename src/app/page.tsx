@@ -1,65 +1,134 @@
-import Image from "next/image";
+import { getLeaderboard, type LeaderboardEntry } from "@/lib/db";
+import { AGENTS, AGENT_IDS, type AgentId } from "@/lib/agents";
+import { IsoCubicle } from "@/components/IsoCubicle";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function TradingFloor() {
+  let leaderboard: LeaderboardEntry[];
+  try {
+    leaderboard = getLeaderboard();
+  } catch {
+    leaderboard = [];
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+    <div className="space-y-10">
+      {/* Hero */}
+      <div className="text-center py-12">
+        <h1 className="font-pixel text-2xl sm:text-3xl text-neon-purple neon-text mb-4">
+          4 AGENTS &bull; 6 TICKERS
+        </h1>
+        <p className="text-gray-400 text-lg">
+          May the best Beatle win.
+        </p>
+      </div>
+
+      {/* Agent Cubicles */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {AGENT_IDS.map((agentId) => {
+          const entry = leaderboard.find((e) => e.id === agentId);
+          return (
+            <IsoCubicle
+              key={agentId}
+              agentId={agentId}
+              elo={entry?.elo_rating ?? 1000}
+              cumulativeScore={entry?.cumulative_score ?? 0}
+              wins={entry?.wins ?? 0}
+              total={entry?.total ?? 0}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          );
+        })}
+      </div>
+
+      {/* Leaderboard Table */}
+      <div className="glass-card neon-border p-6">
+        <h2 className="font-pixel text-sm text-neon-indigo mb-6">
+          LEADERBOARD
+        </h2>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-neon-indigo/20 text-gray-500 text-xs uppercase tracking-wider">
+                <th className="py-3 px-4 text-left">Rank</th>
+                <th className="py-3 px-4 text-left">Agent</th>
+                <th className="py-3 px-4 text-right">ELO</th>
+                <th className="py-3 px-4 text-right">P&L</th>
+                <th className="py-3 px-4 text-right">Win Rate</th>
+                <th className="py-3 px-4 text-right">Brier Score</th>
+              </tr>
+            </thead>
+            <tbody>
+              {leaderboard.map((entry, index) => {
+                const agentId = entry.id as AgentId;
+                const agent =
+                  agentId in AGENTS
+                    ? AGENTS[agentId]
+                    : null;
+                const winRate =
+                  entry.total > 0
+                    ? Math.round((entry.wins / entry.total) * 100)
+                    : 0;
+                return (
+                  <tr
+                    key={entry.id}
+                    className="border-b border-white/5 hover:bg-neon-purple/5 transition-colors"
+                  >
+                    <td className="py-3 px-4 font-pixel text-xs text-gray-500">
+                      #{index + 1}
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="font-bold"
+                          style={{ color: agent?.color ?? "#888" }}
+                        >
+                          {agent?.name ?? entry.id}
+                        </span>
+                        <span className="text-[10px] text-gray-600">
+                          {agent?.philosophy}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4 text-right font-pixel text-xs text-neon-amber neon-text">
+                      {entry.elo_rating}
+                    </td>
+                    <td
+                      className="py-3 px-4 text-right font-mono font-bold"
+                      style={{
+                        color:
+                          entry.cumulative_score >= 0 ? "#10b981" : "#ef4444",
+                      }}
+                    >
+                      {entry.cumulative_score >= 0 ? "+" : ""}
+                      {entry.cumulative_score.toFixed(2)}
+                    </td>
+                    <td className="py-3 px-4 text-right text-gray-300">
+                      {winRate}%
+                      <span className="text-gray-600 text-xs ml-1">
+                        ({entry.wins}/{entry.total})
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-right font-mono text-gray-400">
+                      {entry.avg_brier != null
+                        ? entry.avg_brier.toFixed(4)
+                        : "---"}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
-      </main>
+        {leaderboard.length === 0 && (
+          <div className="text-center py-12 text-gray-600">
+            <p className="font-pixel text-xs">NO DATA YET</p>
+            <p className="text-sm mt-2">
+              Waiting for agents to make their first predictions...
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

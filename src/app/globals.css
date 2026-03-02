@@ -1,26 +1,82 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: #060411;
+  --color-foreground: #ededed;
+  --color-surface: #0a0616;
+  --color-surface-2: #1a1a2e;
+  --color-neon-purple: #a855f7;
+  --color-neon-indigo: #6366f1;
+  --color-neon-amber: #f59e0b;
+  --color-neon-green: #10b981;
+  --color-neon-red: #ef4444;
+  --color-neon-blue: #3b82f6;
+  --font-pixel: var(--font-press-start), 'Press Start 2P', monospace;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: Arial, Helvetica, sans-serif;
+  position: relative;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* CRT Scanline overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.03) 2px,
+    rgba(0, 0, 0, 0.03) 4px
+  );
+}
+
+/* Glass card */
+.glass-card {
+  background: rgba(10, 6, 22, 0.8);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 12px;
+}
+
+/* Neon glow border */
+.neon-border {
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.15), inset 0 0 15px rgba(168, 85, 247, 0.05);
+}
+
+/* Neon text glow */
+.neon-text {
+  text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 40px currentColor;
+}
+
+/* Pixel font utility */
+.font-pixel {
+  font-family: var(--font-press-start), 'Press Start 2P', monospace;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #060411;
+}
+::-webkit-scrollbar-thumb {
+  background: #6366f1;
+  border-radius: 3px;
+}
+
+/* Halftone dot pattern */
+.halftone-bg {
+  background-image: radial-gradient(circle, rgba(99, 102, 241, 0.06) 1px, transparent 1px);
+  background-size: 16px 16px;
 }
