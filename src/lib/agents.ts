@@ -9,6 +9,8 @@ export const AGENTS = {
     borderColor: "border-yellow-700",
     deskItems: ["Buffett annual letters", "Intrinsic value calculator", "Guitar pick"],
     quote: "Be fearful when others are greedy...",
+    instrument: "guitar",
+    symbol: "glasses",
   },
   paul: {
     name: "Paul",
@@ -20,6 +22,8 @@ export const AGENTS = {
     borderColor: "border-purple-700",
     deskItems: ["10-K filings", "Fund flow tracker", "Bass guitar"],
     quote: "Follow the smart money.",
+    instrument: "bass",
+    symbol: "notes",
   },
   george: {
     name: "George",
@@ -31,6 +35,8 @@ export const AGENTS = {
     borderColor: "border-emerald-700",
     deskItems: ["Z-score tables", "Base rate reference", "Sitar"],
     quote: "All things must pass... to the mean.",
+    instrument: "sitar",
+    symbol: "lotus",
   },
   ringo: {
     name: "Ringo",
@@ -42,6 +48,8 @@ export const AGENTS = {
     borderColor: "border-blue-700",
     deskItems: ["Reddit feed", "Trending tickers", "Drumsticks"],
     quote: "What are people actually buying?",
+    instrument: "drums",
+    symbol: "stars",
   },
 } as const;
 

@@ -90,7 +90,10 @@ export default async function TradingFloor() {
                         </span>
                       </div>
                     </td>
-                    <td className="py-3 px-4 text-right font-pixel text-xs text-neon-amber neon-text-glow">
+                    <td
+                      className="py-3 px-4 text-right font-pixel text-xs neon-text-glow"
+                      style={{ color: agent?.color ?? "#f5a623" }}
+                    >
                       {entry.elo_rating}
                     </td>
                     <td
