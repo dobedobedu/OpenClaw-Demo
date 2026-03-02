@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Press_Start_2P } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
 import { NavLink } from "./NavLink";
+import { BrandTitle } from "./BrandTitle";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -47,9 +48,7 @@ export default function RootLayout({
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
               <Link href="/" className="flex items-center gap-2">
-                <span className="font-pixel text-sm bg-gradient-to-r from-neon-purple to-neon-amber bg-clip-text text-transparent">
-                  BRAIN TRUST
-                </span>
+                <BrandTitle />
               </Link>
 
               <div className="flex items-center gap-1">
