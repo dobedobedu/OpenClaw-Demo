@@ -98,10 +98,7 @@ export default async function TradingFloor() {
                     </td>
                     <td
                       className="py-3 px-4 text-right font-mono font-bold"
-                      style={{
-                        color:
-                          entry.cumulative_score >= 0 ? "#10b981" : "#ef4444",
-                      }}
+                      style={{ color: agent?.color ?? "#888" }}
                     >
                       {entry.cumulative_score >= 0 ? "+" : ""}
                       {entry.cumulative_score.toFixed(2)}
