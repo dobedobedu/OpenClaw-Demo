@@ -86,17 +86,17 @@ export default function Jumbotron({ newsItems, mode, activeEvent, onClickEvent }
     }
   });
 
-  const radius = 13;
-  const height = 8;
+  const radius = 20;
+  const height = 12;
   const arcLength = (Math.PI * 2) / numScreens;
   const segmentAngle = arcLength - 0.15;
 
   return (
     <group position={[0, 38, 0]} ref={groupRef}>
       {/* Ticker ring */}
-      <group position={[0, 5.5, 0]} ref={tickerRef}>
+      <group position={[0, 8, 0]} ref={tickerRef}>
         <mesh castShadow receiveShadow>
-          <cylinderGeometry args={[13.2, 13.2, 1.4, 64, 1, true]} />
+          <cylinderGeometry args={[20.3, 20.3, 1.8, 64, 1, true]} />
           <meshBasicMaterial side={THREE.DoubleSide}>
             <RenderTexture attach="map" anisotropy={16} width={1024} height={128}>
               <OrthographicCamera makeDefault manual top={1} bottom={-1} left={-15} right={15} position={[0, 0, 5]} />
@@ -153,29 +153,29 @@ export default function Jumbotron({ newsItems, mode, activeEvent, onClickEvent }
                 <mesh position={[0, 0, 0]} castShadow receiveShadow>
                   <cylinderGeometry args={[radius, radius, height, 64, 1, true, -segmentAngle / 2, segmentAngle]} />
                   <meshStandardMaterial side={THREE.DoubleSide} roughness={0.1} metalness={0.2} transparent opacity={0.98}>
-                    <RenderTexture attach="map" anisotropy={16} width={1024} height={768}>
-                      <OrthographicCamera makeDefault manual top={4} bottom={-4} left={-5} right={5} position={[0, 0, 5]} near={0.1} far={100} />
+                    <RenderTexture attach="map" anisotropy={16} width={1536} height={1024}>
+                      <OrthographicCamera makeDefault manual top={6} bottom={-6} left={-8} right={8} position={[0, 0, 5]} near={0.1} far={100} />
                       <color attach="background" args={[bgColor]} />
                       <ambientLight intensity={2} />
                       <directionalLight position={[10, 10, 5]} intensity={2} />
                       {/* Micro-texture dot grid overlay */}
                       <mesh position={[0, 0, 0.05]}>
-                        <planeGeometry args={[12, 10]} />
+                        <planeGeometry args={[18, 14]} />
                         <meshBasicMaterial map={dotGridTex} transparent opacity={0.6} depthWrite={false} />
                       </mesh>
                       {/* Top accent bar */}
-                      <mesh position={[0, 3.5, 0]}>
-                        <planeGeometry args={[12, 0.6]} />
+                      <mesh position={[0, 5.3, 0]}>
+                        <planeGeometry args={[18, 0.8]} />
                         <meshBasicMaterial color={topColor} />
                       </mesh>
                       {showEvent ? (
                         <EventCardContent event={activeEvent} />
                       ) : (
-                        <group position={[-4, 0, 0]}>
-                          <Text position={[0, 2.8, 0.1]} fontSize={0.3} color={timeColor} anchorX="left" anchorY="middle" fontWeight="bold" letterSpacing={0.08}>
+                        <group position={[-6, 0, 0]}>
+                          <Text position={[0, 4.2, 0.1]} fontSize={0.45} color={timeColor} anchorX="left" anchorY="middle" fontWeight="bold" letterSpacing={0.08}>
                             {news.time}
                           </Text>
-                          <Text position={[0, 0.8, 0.1]} fontSize={0.65} color={titleColor} anchorX="left" anchorY="middle" fontWeight="bold" maxWidth={7.5} lineHeight={1.3}>
+                          <Text position={[0, 1.2, 0.1]} fontSize={0.95} color={titleColor} anchorX="left" anchorY="middle" fontWeight="bold" maxWidth={12} lineHeight={1.3}>
                             {news.desc}
                           </Text>
                         </group>
@@ -184,7 +184,7 @@ export default function Jumbotron({ newsItems, mode, activeEvent, onClickEvent }
                   </meshStandardMaterial>
                 </mesh>
                 <mesh position={[0, 0, 0]} castShadow receiveShadow>
-                  <cylinderGeometry args={[12.95, 12.95, height + 0.2, 64, 1, true, -(segmentAngle + 0.02) / 2, segmentAngle + 0.02]} />
+                  <cylinderGeometry args={[19.9, 19.9, height + 0.2, 64, 1, true, -(segmentAngle + 0.02) / 2, segmentAngle + 0.02]} />
                   <meshStandardMaterial color="#3d2260" side={THREE.DoubleSide} metalness={0.9} roughness={0.2} />
                 </mesh>
               </group>
@@ -212,32 +212,32 @@ function EventCardContent({ event }: { event: RaceEvent }) {
   const reasoningLabel = isGain ? "What worked:" : "What went wrong:";
 
   return (
-    <group position={[-4, 0, 0]}>
+    <group position={[-6, 0, 0]}>
       {/* Date */}
-      <Text position={[0, 2.8, 0.1]} fontSize={0.3} color="#6b21a8" anchorX="left" anchorY="middle" fontWeight="bold">
+      <Text position={[0, 4.2, 0.1]} fontSize={0.45} color="#6b21a8" anchorX="left" anchorY="middle" fontWeight="bold">
         {event.date}
       </Text>
       {/* Agent name */}
-      <Text position={[0, 1.8, 0.1]} fontSize={0.7} color={agentConfig.color} anchorX="left" anchorY="middle" fontWeight="bold">
+      <Text position={[0, 2.8, 0.1]} fontSize={1.05} color={agentConfig.color} anchorX="left" anchorY="middle" fontWeight="bold">
         {agentConfig.name.toUpperCase()}
       </Text>
       {/* Action text */}
-      <Text position={[0, 0.7, 0.1]} fontSize={0.45} color="#1e293b" anchorX="left" anchorY="middle" maxWidth={7} lineHeight={1.3}>
+      <Text position={[0, 1.2, 0.1]} fontSize={0.65} color="#1e293b" anchorX="left" anchorY="middle" maxWidth={11} lineHeight={1.3}>
         {event.action}
       </Text>
       {/* ELO badge */}
-      <Text position={[7.5, 1.8, 0.1]} fontSize={0.55} color={isGain ? "#16a34a" : "#dc2626"} anchorX="right" anchorY="middle" fontWeight="bold">
+      <Text position={[12, 2.8, 0.1]} fontSize={0.8} color={isGain ? "#16a34a" : "#dc2626"} anchorX="right" anchorY="middle" fontWeight="bold">
         {eloText}
       </Text>
       {/* Reasoning label */}
       {reasoningText && (
-        <Text position={[0, -0.3, 0.1]} fontSize={0.28} color="#475569" anchorX="left" anchorY="middle" fontWeight="bold">
+        <Text position={[0, -0.3, 0.1]} fontSize={0.4} color="#475569" anchorX="left" anchorY="middle" fontWeight="bold">
           {reasoningLabel}
         </Text>
       )}
       {/* Reasoning text */}
       {reasoningText && (
-        <Text position={[0, -1.2, 0.1]} fontSize={0.32} color="#7c3aed" anchorX="left" anchorY="middle" maxWidth={8} lineHeight={1.3}>
+        <Text position={[0, -1.6, 0.1]} fontSize={0.48} color="#7c3aed" anchorX="left" anchorY="middle" maxWidth={12} lineHeight={1.3}>
           {reasoningText}
         </Text>
       )}
