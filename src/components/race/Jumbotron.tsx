@@ -65,11 +65,12 @@ export default function Jumbotron({ newsItems, mode, activeEvent, onClickEvent }
   }, [mode, activeEvent, numScreens]);
 
   useEffect(() => {
+    if (mode === "event") return; // Don't auto-rotate while showing an event
     const interval = setInterval(() => {
       setCurrentIndex((prev) => prev + 1);
     }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [mode]);
   const isometricCameraOffset = Math.PI / 4;
 
   useFrame((state, delta) => {
@@ -130,10 +131,10 @@ export default function Jumbotron({ newsItems, mode, activeEvent, onClickEvent }
 
             if (showEvent) {
               const agentConfig = AGENTS_CONFIG[activeEvent.agentId];
-              bgColor = "#f1f5f9";
+              bgColor = "#0d0920";
               topColor = agentConfig.color;
               titleColor = agentConfig.color;
-              timeColor = "#6b21a8";
+              timeColor = "#a78bfa";
             } else if (news.type === "good") {
               bgColor = "#1a4d30";
               topColor = "#10b981";
@@ -214,7 +215,7 @@ function EventCardContent({ event }: { event: RaceEvent }) {
   return (
     <group position={[-6, 0, 0]}>
       {/* Date */}
-      <Text position={[0, 4.2, 0.1]} fontSize={0.45} color="#6b21a8" anchorX="left" anchorY="middle" fontWeight="bold">
+      <Text position={[0, 4.2, 0.1]} fontSize={0.45} color="#a78bfa" anchorX="left" anchorY="middle" fontWeight="bold">
         {event.date}
       </Text>
       {/* Agent name */}
@@ -222,22 +223,22 @@ function EventCardContent({ event }: { event: RaceEvent }) {
         {agentConfig.name.toUpperCase()}
       </Text>
       {/* Action text */}
-      <Text position={[0, 1.2, 0.1]} fontSize={0.65} color="#1e293b" anchorX="left" anchorY="middle" maxWidth={11} lineHeight={1.3}>
+      <Text position={[0, 1.2, 0.1]} fontSize={0.65} color="#e2e8f0" anchorX="left" anchorY="middle" maxWidth={11} lineHeight={1.3}>
         {event.action}
       </Text>
       {/* ELO badge */}
-      <Text position={[12, 2.8, 0.1]} fontSize={0.8} color={isGain ? "#16a34a" : "#dc2626"} anchorX="right" anchorY="middle" fontWeight="bold">
+      <Text position={[12, 2.8, 0.1]} fontSize={0.8} color={isGain ? "#4ade80" : "#fb7185"} anchorX="right" anchorY="middle" fontWeight="bold">
         {eloText}
       </Text>
       {/* Reasoning label */}
       {reasoningText && (
-        <Text position={[0, -0.3, 0.1]} fontSize={0.4} color="#475569" anchorX="left" anchorY="middle" fontWeight="bold">
+        <Text position={[0, -0.3, 0.1]} fontSize={0.4} color="#94a3b8" anchorX="left" anchorY="middle" fontWeight="bold">
           {reasoningLabel}
         </Text>
       )}
       {/* Reasoning text */}
       {reasoningText && (
-        <Text position={[0, -1.6, 0.1]} fontSize={0.48} color="#7c3aed" anchorX="left" anchorY="middle" maxWidth={12} lineHeight={1.3}>
+        <Text position={[0, -1.6, 0.1]} fontSize={0.48} color="#c4b5fd" anchorX="left" anchorY="middle" maxWidth={12} lineHeight={1.3}>
           {reasoningText}
         </Text>
       )}
