@@ -49,6 +49,20 @@ export default function Jumbotron({ newsItems, mode, activeEvent, onClickEvent }
   const groupRef = useRef<THREE.Group>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const dotGridTex = useDotGridTexture();
+  const numScreens = newsItems.length;
+
+  // Force carousel to show event panel when a new event fires
+  const prevEventRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (mode === "event" && activeEvent && activeEvent.id !== prevEventRef.current) {
+      prevEventRef.current = activeEvent.id;
+      // Jump currentIndex so the currently visible panel (currentIndex % numScreens) shows the event
+      setCurrentIndex((prev) => {
+        const target = prev - (prev % numScreens);
+        return target;
+      });
+    }
+  }, [mode, activeEvent, numScreens]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -56,8 +70,6 @@ export default function Jumbotron({ newsItems, mode, activeEvent, onClickEvent }
     }, 5000);
     return () => clearInterval(interval);
   }, []);
-
-  const numScreens = newsItems.length;
   const isometricCameraOffset = Math.PI / 4;
 
   useFrame((state, delta) => {
@@ -188,11 +200,16 @@ function EventCardContent({ event }: { event: RaceEvent }) {
   const agentConfig = AGENTS_CONFIG[event.agentId];
   const isGain = event.eloChange > 0;
   const eloText = `${isGain ? "+" : ""}${event.eloChange} ELO`;
+
+  // Truncate reasoning to fit the panel, but give it more room (120 chars)
   const reasoningText = event.reasoning
-    ? event.reasoning.length > 80
-      ? event.reasoning.slice(0, 77) + "..."
+    ? event.reasoning.length > 120
+      ? event.reasoning.slice(0, 117) + "..."
       : event.reasoning
     : null;
+
+  // Label for reasoning section
+  const reasoningLabel = isGain ? "What worked:" : "What went wrong:";
 
   return (
     <group position={[-4, 0, 0]}>
@@ -201,21 +218,27 @@ function EventCardContent({ event }: { event: RaceEvent }) {
         {event.date}
       </Text>
       {/* Agent name */}
-      <Text position={[0, 1.6, 0.1]} fontSize={0.7} color={agentConfig.color} anchorX="left" anchorY="middle" fontWeight="bold">
+      <Text position={[0, 1.8, 0.1]} fontSize={0.7} color={agentConfig.color} anchorX="left" anchorY="middle" fontWeight="bold">
         {agentConfig.name.toUpperCase()}
       </Text>
       {/* Action text */}
-      <Text position={[0, 0.4, 0.1]} fontSize={0.5} color="#1e293b" anchorX="left" anchorY="middle" maxWidth={7} lineHeight={1.3}>
+      <Text position={[0, 0.7, 0.1]} fontSize={0.45} color="#1e293b" anchorX="left" anchorY="middle" maxWidth={7} lineHeight={1.3}>
         {event.action}
       </Text>
       {/* ELO badge */}
-      <Text position={[7.5, 1.6, 0.1]} fontSize={0.55} color={isGain ? "#16a34a" : "#dc2626"} anchorX="right" anchorY="middle" fontWeight="bold">
+      <Text position={[7.5, 1.8, 0.1]} fontSize={0.55} color={isGain ? "#16a34a" : "#dc2626"} anchorX="right" anchorY="middle" fontWeight="bold">
         {eloText}
       </Text>
-      {/* Reasoning */}
+      {/* Reasoning label */}
       {reasoningText && (
-        <Text position={[0, -1.0, 0.1]} fontSize={0.32} color="#7c3aed" anchorX="left" anchorY="middle" maxWidth={7.5} lineHeight={1.3} fontStyle="italic">
-          &ldquo;{reasoningText}&rdquo;
+        <Text position={[0, -0.3, 0.1]} fontSize={0.28} color="#475569" anchorX="left" anchorY="middle" fontWeight="bold">
+          {reasoningLabel}
+        </Text>
+      )}
+      {/* Reasoning text */}
+      {reasoningText && (
+        <Text position={[0, -1.2, 0.1]} fontSize={0.32} color="#7c3aed" anchorX="left" anchorY="middle" maxWidth={8} lineHeight={1.3}>
+          {reasoningText}
         </Text>
       )}
     </group>

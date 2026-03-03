@@ -5,7 +5,7 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Stars, OrthographicCamera } from "@react-three/drei";
 import * as THREE from "three";
 import { TIMELINE_EVENTS, AGENTS_CONFIG, type AgentId, type RaceEvent } from "@/lib/mockRaceData";
-import type { EloHistory, LeaderboardEntry, Prediction } from "@/lib/db";
+import type { EloHistory, LeaderboardEntry, Prediction, Reflection } from "@/lib/db";
 import { NEWS_ITEMS, TOKEN_MAP, TILES_TO_WIN } from "./race/constants";
 import type { TokenType } from "./race/constants";
 import ParadoxBoard from "./race/ParadoxBoard";
@@ -22,14 +22,24 @@ interface RaceDashboardProps {
   eloHistory?: EloHistory[];
   leaderboardData?: LeaderboardEntry[];
   predictions?: Prediction[];
+  reflections?: Reflection[];
 }
 
-function buildTimelineFromEloHistory(eloHistory: EloHistory[]): RaceEvent[] {
+function buildTimelineFromEloHistory(eloHistory: EloHistory[], reflections?: Reflection[]): RaceEvent[] {
   const byDate: Record<string, Record<string, number>> = {};
   for (const row of eloHistory) {
     if (!byDate[row.date]) byDate[row.date] = {};
     byDate[row.date][row.agent_id] = row.elo_rating;
   }
+
+  // Index reflections by agent+date for fast lookup
+  const reflectionMap = new Map<string, Reflection>();
+  if (reflections) {
+    for (const r of reflections) {
+      reflectionMap.set(`${r.agent_id}:${r.date}`, r);
+    }
+  }
+
   const dates = Object.keys(byDate).sort();
   const events: RaceEvent[] = [];
   let eventId = 0;
@@ -43,13 +53,30 @@ function buildTimelineFromEloHistory(eloHistory: EloHistory[]): RaceEvent[] {
       const curr = currElos[agentId];
       const delta = Math.round(curr - prev);
       if (delta !== 0) {
+        const ref = reflectionMap.get(`${agentId}:${currDate}`);
+        let action: string;
+        let reasoning = "";
+
+        if (ref) {
+          action = `${ref.correct_count}/${ref.total_count} correct — ${delta > 0 ? "gained" : "lost"} ${Math.abs(delta)} ELO`;
+          if (delta > 0 && ref.what_went_well) {
+            reasoning = ref.what_went_well;
+          } else if (delta < 0 && ref.what_went_wrong) {
+            reasoning = ref.what_went_wrong;
+          } else if (ref.adjustments) {
+            reasoning = ref.adjustments;
+          }
+        } else {
+          action = delta > 0 ? `gained ${delta} ELO` : `lost ${Math.abs(delta)} ELO`;
+        }
+
         events.push({
           id: String(++eventId),
           date: currDate,
           agentId: agentId as AgentId,
-          action: delta > 0 ? `gained ${delta} ELO` : `lost ${Math.abs(delta)} ELO`,
+          action,
           eloChange: delta,
-          reasoning: "",
+          reasoning,
         });
       }
     }
@@ -126,7 +153,7 @@ const AGENT_OFFSETS = [
   { x: 0.6, z: 0.6 },
 ];
 
-export default function RaceDashboard({ eloHistory, leaderboardData, predictions }: RaceDashboardProps) {
+export default function RaceDashboard({ eloHistory, leaderboardData, predictions, reflections }: RaceDashboardProps) {
   const [sliderIndex, setSliderIndex] = useState(0);
   const [mounted, setMounted] = useState(false);
   const [jumbotronMode, setJumbotronMode] = useState<"news" | "event">("news");
@@ -137,9 +164,9 @@ export default function RaceDashboard({ eloHistory, leaderboardData, predictions
   useEffect(() => setMounted(true), []);
 
   const timelineEvents = useMemo(() => {
-    if (eloHistory && eloHistory.length > 0) return buildTimelineFromEloHistory(eloHistory);
+    if (eloHistory && eloHistory.length > 0) return buildTimelineFromEloHistory(eloHistory, reflections ?? undefined);
     return TIMELINE_EVENTS;
-  }, [eloHistory]);
+  }, [eloHistory, reflections]);
 
   const newsItems = useMemo(() => {
     if (predictions && predictions.length > 0) return buildNewsFromPredictions(predictions);
