@@ -2,14 +2,15 @@
 
 import { useState, useEffect } from "react";
 import RaceDashboard from "@/components/RaceDashboard";
-import { fetchLeaderboard, fetchEloHistory, fetchPredictions, fetchReflections } from "@/lib/api";
-import type { EloHistory, LeaderboardEntry, Prediction, Reflection } from "@/lib/db";
+import { fetchLeaderboard, fetchEloHistory, fetchPredictions, fetchReflections, fetchHeadlines } from "@/lib/api";
+import type { EloHistory, LeaderboardEntry, Prediction, Reflection, Headline } from "@/lib/db";
 
 export default function RacePage() {
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[] | null>(null);
   const [eloHistory, setEloHistory] = useState<EloHistory[] | null>(null);
   const [predictions, setPredictions] = useState<Prediction[] | null>(null);
   const [reflections, setReflections] = useState<Reflection[] | null>(null);
+  const [headlines, setHeadlines] = useState<Headline[] | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -18,11 +19,13 @@ export default function RacePage() {
       fetchEloHistory(90).catch(() => null),
       fetchPredictions().catch(() => null),
       fetchReflections().catch(() => null),
-    ]).then(([lb, elo, preds, refs]) => {
+      fetchHeadlines().catch(() => null),
+    ]).then(([lb, elo, preds, refs, hdlns]) => {
       if (lb && !lb.error) setLeaderboardData(lb);
       if (elo && !elo.error) setEloHistory(elo);
       if (preds && !preds.error) setPredictions(preds);
       if (refs && !refs.error) setReflections(refs);
+      if (hdlns && !hdlns.error) setHeadlines(hdlns);
       setLoading(false);
     });
   }, []);
@@ -47,6 +50,7 @@ export default function RacePage() {
         leaderboardData={leaderboardData ?? undefined}
         predictions={predictions ?? undefined}
         reflections={reflections ?? undefined}
+        headlines={headlines ?? undefined}
       />
     </main>
   );

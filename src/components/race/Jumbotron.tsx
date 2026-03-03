@@ -200,48 +200,24 @@ export default function Jumbotron({ newsItems, mode, activeEvent, onClickEvent }
 function EventCardContent({ event }: { event: RaceEvent }) {
   const agentConfig = AGENTS_CONFIG[event.agentId];
   const isGain = event.eloChange > 0;
-  const eloText = `${isGain ? "+" : ""}${event.eloChange} ELO`;
-
-  // Truncate reasoning to fit the panel, but give it more room (120 chars)
-  const reasoningText = event.reasoning
-    ? event.reasoning.length > 120
-      ? event.reasoning.slice(0, 117) + "..."
-      : event.reasoning
-    : null;
-
-  // Label for reasoning section
-  const reasoningLabel = isGain ? "What worked:" : "What went wrong:";
 
   return (
     <group position={[-6, 0, 0]}>
-      {/* Date */}
+      {/* Date + score badge */}
       <Text position={[0, 4.2, 0.1]} fontSize={0.45} color="#a78bfa" anchorX="left" anchorY="middle" fontWeight="bold">
         {event.date}
       </Text>
+      <Text position={[14, 4.2, 0.1]} fontSize={0.45} color={isGain ? "#4ade80" : "#fb7185"} anchorX="right" anchorY="middle" fontWeight="bold">
+        {isGain ? "+" : ""}{event.eloChange} ELO
+      </Text>
       {/* Agent name */}
-      <Text position={[0, 2.8, 0.1]} fontSize={1.05} color={agentConfig.color} anchorX="left" anchorY="middle" fontWeight="bold">
+      <Text position={[0, 2.6, 0.1]} fontSize={1.2} color={agentConfig.color} anchorX="left" anchorY="middle" fontWeight="bold">
         {agentConfig.name.toUpperCase()}
       </Text>
-      {/* Action text */}
-      <Text position={[0, 1.2, 0.1]} fontSize={0.65} color="#e2e8f0" anchorX="left" anchorY="middle" maxWidth={11} lineHeight={1.3}>
+      {/* Headline — the main attraction */}
+      <Text position={[0, 0.4, 0.1]} fontSize={0.75} color="#f1f5f9" anchorX="left" anchorY="middle" maxWidth={13} lineHeight={1.4} fontWeight="bold">
         {event.action}
       </Text>
-      {/* ELO badge */}
-      <Text position={[12, 2.8, 0.1]} fontSize={0.8} color={isGain ? "#4ade80" : "#fb7185"} anchorX="right" anchorY="middle" fontWeight="bold">
-        {eloText}
-      </Text>
-      {/* Reasoning label */}
-      {reasoningText && (
-        <Text position={[0, -0.3, 0.1]} fontSize={0.4} color="#94a3b8" anchorX="left" anchorY="middle" fontWeight="bold">
-          {reasoningLabel}
-        </Text>
-      )}
-      {/* Reasoning text */}
-      {reasoningText && (
-        <Text position={[0, -1.6, 0.1]} fontSize={0.48} color="#c4b5fd" anchorX="left" anchorY="middle" maxWidth={12} lineHeight={1.3}>
-          {reasoningText}
-        </Text>
-      )}
     </group>
   );
 }

@@ -6,12 +6,20 @@ const DB_PATH = path.join(
 );
 
 let db: Database.Database | null = null;
+let dbRw: Database.Database | null = null;
 
 function getDb(): Database.Database {
   if (!db) {
     db = new Database(DB_PATH, { readonly: true });
   }
   return db;
+}
+
+function getDbRw(): Database.Database {
+  if (!dbRw) {
+    dbRw = new Database(DB_PATH);
+  }
+  return dbRw;
 }
 
 export interface Agent {
@@ -143,6 +151,58 @@ export function getReflections(
   }
   query += " ORDER BY date DESC, agent_id LIMIT 20";
   return getDb().prepare(query).all(...params) as Reflection[];
+}
+
+export interface Headline {
+  agent_id: string;
+  date: string;
+  headline: string;
+}
+
+export function getHeadlines(): Headline[] {
+  return getDb()
+    .prepare("SELECT agent_id, date, headline FROM headlines ORDER BY date DESC")
+    .all() as Headline[];
+}
+
+export function getMissingHeadlineDates(): { agent_id: string; date: string }[] {
+  return getDb()
+    .prepare(
+      `SELECT r.agent_id, r.date FROM reflections r
+       LEFT JOIN headlines h ON r.agent_id = h.agent_id AND r.date = h.date
+       WHERE h.id IS NULL
+       ORDER BY r.date DESC`
+    )
+    .all() as { agent_id: string; date: string }[];
+}
+
+export function saveHeadline(agentId: string, date: string, headline: string): void {
+  getDbRw()
+    .prepare("INSERT OR REPLACE INTO headlines (agent_id, date, headline) VALUES (?, ?, ?)")
+    .run(agentId, date, headline);
+}
+
+export function getReflectionWithPredictions(agentId: string, date: string) {
+  const reflection = getDb()
+    .prepare("SELECT * FROM reflections WHERE agent_id = ? AND date = ?")
+    .get(agentId, date) as Reflection | undefined;
+  const predictions = getDb()
+    .prepare(
+      `SELECT p.ticker, p.direction, p.confidence, p.reasoning,
+              e.correct, e.actual_change_pct
+       FROM predictions p
+       LEFT JOIN evaluations e ON e.prediction_id = p.id
+       WHERE p.agent_id = ? AND p.target_date = ?`
+    )
+    .all(agentId, date) as {
+      ticker: string;
+      direction: string;
+      confidence: number;
+      reasoning: string;
+      correct: boolean | null;
+      actual_change_pct: number | null;
+    }[];
+  return { reflection, predictions };
 }
 
 export function getAgentAccuracy(): Record<string, Record<string, { correct: number; total: number }>> {

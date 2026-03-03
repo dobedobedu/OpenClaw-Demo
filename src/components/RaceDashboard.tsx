@@ -5,7 +5,7 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Stars, OrthographicCamera } from "@react-three/drei";
 import * as THREE from "three";
 import { TIMELINE_EVENTS, AGENTS_CONFIG, type AgentId, type RaceEvent } from "@/lib/mockRaceData";
-import type { EloHistory, LeaderboardEntry, Prediction, Reflection } from "@/lib/db";
+import type { EloHistory, LeaderboardEntry, Prediction, Reflection, Headline } from "@/lib/db";
 import { NEWS_ITEMS, TOKEN_MAP, TILES_TO_WIN } from "./race/constants";
 import type { TokenType } from "./race/constants";
 import ParadoxBoard from "./race/ParadoxBoard";
@@ -24,9 +24,10 @@ interface RaceDashboardProps {
   leaderboardData?: LeaderboardEntry[];
   predictions?: Prediction[];
   reflections?: Reflection[];
+  headlines?: Headline[];
 }
 
-function buildTimelineFromEloHistory(eloHistory: EloHistory[], reflections?: Reflection[]): RaceEvent[] {
+function buildTimelineFromEloHistory(eloHistory: EloHistory[], reflections?: Reflection[], headlines?: Headline[]): RaceEvent[] {
   const byDate: Record<string, Record<string, number>> = {};
   for (const row of eloHistory) {
     if (!byDate[row.date]) byDate[row.date] = {};
@@ -38,6 +39,14 @@ function buildTimelineFromEloHistory(eloHistory: EloHistory[], reflections?: Ref
   if (reflections) {
     for (const r of reflections) {
       reflectionMap.set(`${r.agent_id}:${r.date}`, r);
+    }
+  }
+
+  // Index headlines by agent+date
+  const headlineMap = new Map<string, string>();
+  if (headlines) {
+    for (const h of headlines) {
+      headlineMap.set(`${h.agent_id}:${h.date}`, h.headline);
     }
   }
 
@@ -55,11 +64,19 @@ function buildTimelineFromEloHistory(eloHistory: EloHistory[], reflections?: Ref
       const delta = Math.round(curr - prev);
       if (delta !== 0) {
         const ref = reflectionMap.get(`${agentId}:${currDate}`);
+        const headline = headlineMap.get(`${agentId}:${currDate}`);
         let action: string;
         let reasoning = "";
 
-        if (ref) {
+        if (headline) {
+          action = headline;
+        } else if (ref) {
           action = `${ref.correct_count}/${ref.total_count} correct — ${delta > 0 ? "gained" : "lost"} ${Math.abs(delta)} ELO`;
+        } else {
+          action = delta > 0 ? `gained ${delta} ELO` : `lost ${Math.abs(delta)} ELO`;
+        }
+
+        if (ref) {
           if (delta > 0 && ref.what_went_well) {
             reasoning = ref.what_went_well;
           } else if (delta < 0 && ref.what_went_wrong) {
@@ -67,8 +84,6 @@ function buildTimelineFromEloHistory(eloHistory: EloHistory[], reflections?: Ref
           } else if (ref.adjustments) {
             reasoning = ref.adjustments;
           }
-        } else {
-          action = delta > 0 ? `gained ${delta} ELO` : `lost ${Math.abs(delta)} ELO`;
         }
 
         events.push({
@@ -154,7 +169,7 @@ const AGENT_OFFSETS = [
   { x: 0.6, z: 0.6 },
 ];
 
-export default function RaceDashboard({ eloHistory, leaderboardData, predictions, reflections }: RaceDashboardProps) {
+export default function RaceDashboard({ eloHistory, leaderboardData, predictions, reflections, headlines }: RaceDashboardProps) {
   const [sliderIndex, setSliderIndex] = useState(0);
   const [mounted, setMounted] = useState(false);
   const [jumbotronMode, setJumbotronMode] = useState<"news" | "event">("news");
@@ -166,9 +181,9 @@ export default function RaceDashboard({ eloHistory, leaderboardData, predictions
   useEffect(() => setMounted(true), []);
 
   const timelineEvents = useMemo(() => {
-    if (eloHistory && eloHistory.length > 0) return buildTimelineFromEloHistory(eloHistory, reflections ?? undefined);
+    if (eloHistory && eloHistory.length > 0) return buildTimelineFromEloHistory(eloHistory, reflections ?? undefined, headlines ?? undefined);
     return TIMELINE_EVENTS;
-  }, [eloHistory, reflections]);
+  }, [eloHistory, reflections, headlines]);
 
   const newsItems = useMemo(() => {
     if (predictions && predictions.length > 0) return buildNewsFromPredictions(predictions);

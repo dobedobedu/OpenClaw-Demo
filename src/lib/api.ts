@@ -26,6 +26,11 @@ export async function fetchAccuracy() {
   return res.json();
 }
 
+export async function fetchHeadlines() {
+  const res = await fetch("/visualization/api/headlines");
+  return res.json();
+}
+
 export async function fetchReflections(agent?: string, date?: string) {
   const params = new URLSearchParams();
   if (agent) params.set("agent", agent);
