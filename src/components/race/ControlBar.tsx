@@ -104,16 +104,6 @@ function formatDateShort(dateStr: string): string {
   return `${d.getMonth() + 1}/${d.getDate()}`;
 }
 
-function getWeekLabel(dateStr: string): string {
-  if (dateStr.startsWith("Day")) return dateStr.split(" - ")[0];
-  const d = new Date(dateStr + "T12:00:00");
-  // Get Monday of this week
-  const day = d.getDay();
-  const monday = new Date(d);
-  monday.setDate(d.getDate() - ((day + 6) % 7));
-  return `WK ${monday.getMonth() + 1}/${monday.getDate()}`;
-}
-
 export default function ControlBar({
   leaderboard,
   sliderIndex,
@@ -140,13 +130,28 @@ export default function ControlBar({
     return groups;
   }, [timelineEvents]);
 
-  // Current week label based on active event
-  const currentWeekLabel = useMemo(() => {
+  // Assign week numbers: group consecutive dates into 5-day trading weeks
+  const weekMap = useMemo(() => {
+    const map = new Map<string, number>();
+    const uniqueDates = [...new Set(timelineEvents.map(e => e.date))];
+    uniqueDates.forEach((d, i) => map.set(d, Math.floor(i / 5) + 1));
+    return map;
+  }, [timelineEvents]);
+
+  const currentWeekNum = useMemo(() => {
     const idx = Math.max(0, Math.floor(sliderIndex) - 1);
     const date = timelineEvents[idx]?.date;
-    if (!date) return "WK 1";
-    return getWeekLabel(date);
-  }, [sliderIndex, timelineEvents]);
+    if (!date) return 1;
+    return weekMap.get(date) ?? 1;
+  }, [sliderIndex, timelineEvents, weekMap]);
+
+  // Current day for the tooltip below timeline
+  const currentDay = useMemo(() => {
+    const idx = Math.max(0, Math.floor(sliderIndex) - 1);
+    const date = timelineEvents[idx]?.date;
+    if (!date) return null;
+    return { date, pct: maxSlider > 0 ? (sliderIndex / maxSlider) * 100 : 0 };
+  }, [sliderIndex, timelineEvents, maxSlider]);
 
   const progress = maxSlider > 0 ? (sliderIndex / maxSlider) * 100 : 0;
 
@@ -190,8 +195,8 @@ export default function ControlBar({
               >
                 ‹
               </button>
-              <span className="text-[10px] font-mono text-gray-400 uppercase tracking-wider min-w-[52px] text-center">
-                {currentWeekLabel}
+              <span className="text-[10px] font-mono text-gray-400 uppercase tracking-wider min-w-[36px] text-center">
+                WK {currentWeekNum}
               </span>
               <button
                 onClick={goNextWeek}
@@ -270,6 +275,18 @@ export default function ControlBar({
                 onChange={(e) => onSliderChange(parseFloat(e.target.value))}
                 className="absolute inset-0 w-full opacity-0 cursor-pointer h-10"
               />
+
+              {/* Day tooltip — follows playhead below the timeline */}
+              {currentDay && sliderIndex > 0 && (
+                <div
+                  className="absolute -bottom-5 -translate-x-1/2 pointer-events-none transition-[left] duration-100"
+                  style={{ left: `${currentDay.pct}%` }}
+                >
+                  <span className="text-[10px] font-mono text-yellow-300/80 whitespace-nowrap">
+                    {formatDateShort(currentDay.date)}
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Right: Next event button */}
