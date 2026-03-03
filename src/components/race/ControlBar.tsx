@@ -24,7 +24,7 @@ function TokenBreakdown({ tokens }: { tokens: string[] }) {
   if (tokens.length === 0) return null;
   const strawberries = tokens.filter(t => t === "🍓").length;
   const diamonds = tokens.filter(t => t === "💎").length;
-  const subs = tokens.filter(t => t === "🟡").length;
+  const subs = tokens.filter(t => t === "🚢").length;
   return (
     <div className="flex items-center gap-2 pl-2 ml-2 border-l border-white/15">
       {strawberries > 0 && (
@@ -35,7 +35,7 @@ function TokenBreakdown({ tokens }: { tokens: string[] }) {
       )}
       {subs > 0 && (
         <span className="text-[11px] flex items-center gap-0.5 whitespace-nowrap">
-          <img src="/visualization/yellow-submarine.png" alt="Sub" className="w-4 h-auto inline" />
+          <img src="/visualization/yellow-submarine.svg" alt="Sub" className="w-4 h-auto inline" />
           <span className="text-gray-300 font-mono">x{subs}</span>
         </span>
       )}

@@ -131,10 +131,17 @@ export default function Jumbotron({ newsItems, mode, activeEvent, onClickEvent }
 
             if (showEvent) {
               const agentConfig = AGENTS_CONFIG[activeEvent.agentId];
-              bgColor = "#0d0920";
+              // High-contrast light backgrounds per agent
+              const agentBg: Record<string, string> = {
+                john: "#f5e6c8",   // beige
+                paul: "#ede4f7",   // very light purple
+                george: "#d8f5e3", // light mint
+                ringo: "#e4dff5",  // light lilac
+              };
+              bgColor = agentBg[activeEvent.agentId] ?? "#f0ece4";
               topColor = agentConfig.color;
-              titleColor = agentConfig.color;
-              timeColor = "#a78bfa";
+              titleColor = "#111111";
+              timeColor = "#333333";
             } else if (news.type === "good") {
               bgColor = "#1a4d30";
               topColor = "#10b981";
@@ -159,11 +166,13 @@ export default function Jumbotron({ newsItems, mode, activeEvent, onClickEvent }
                       <color attach="background" args={[bgColor]} />
                       <ambientLight intensity={2} />
                       <directionalLight position={[10, 10, 5]} intensity={2} />
-                      {/* Micro-texture dot grid overlay */}
-                      <mesh position={[0, 0, 0.05]}>
-                        <planeGeometry args={[18, 14]} />
-                        <meshBasicMaterial map={dotGridTex} transparent opacity={0.6} depthWrite={false} />
-                      </mesh>
+                      {/* Micro-texture dot grid overlay — skip for event panels so light backgrounds show through */}
+                      {!showEvent && (
+                        <mesh position={[0, 0, 0.05]}>
+                          <planeGeometry args={[18, 14]} />
+                          <meshBasicMaterial map={dotGridTex} transparent opacity={0.6} depthWrite={false} />
+                        </mesh>
+                      )}
                       {/* Top accent bar */}
                       <mesh position={[0, 5.3, 0]}>
                         <planeGeometry args={[18, 0.8]} />
@@ -204,18 +213,18 @@ function EventCardContent({ event }: { event: RaceEvent }) {
   return (
     <group position={[-6, 0, 0]}>
       {/* Date + score badge */}
-      <Text position={[0, 4.2, 0.1]} fontSize={0.45} color="#a78bfa" anchorX="left" anchorY="middle" fontWeight="bold">
+      <Text position={[0, 4.2, 0.1]} fontSize={0.45} color="#444444" anchorX="left" anchorY="middle" fontWeight="bold">
         {event.date}
       </Text>
-      <Text position={[14, 4.2, 0.1]} fontSize={0.45} color={isGain ? "#4ade80" : "#fb7185"} anchorX="right" anchorY="middle" fontWeight="bold">
+      <Text position={[14, 4.2, 0.1]} fontSize={0.45} color={isGain ? "#15803d" : "#b91c1c"} anchorX="right" anchorY="middle" fontWeight="bold">
         {isGain ? "+" : ""}{event.eloChange} ELO
       </Text>
       {/* Agent name */}
-      <Text position={[0, 2.6, 0.1]} fontSize={1.2} color={agentConfig.color} anchorX="left" anchorY="middle" fontWeight="bold">
+      <Text position={[0, 2.6, 0.1]} fontSize={1.2} color="#111111" anchorX="left" anchorY="middle" fontWeight="bold">
         {agentConfig.name.toUpperCase()}
       </Text>
       {/* Headline — the main attraction */}
-      <Text position={[0, 0.4, 0.1]} fontSize={0.75} color="#f1f5f9" anchorX="left" anchorY="middle" maxWidth={13} lineHeight={1.4} fontWeight="bold">
+      <Text position={[0, 0.4, 0.1]} fontSize={0.75} color="#1a1a1a" anchorX="left" anchorY="middle" maxWidth={13} lineHeight={1.4} fontWeight="bold">
         {event.action}
       </Text>
     </group>

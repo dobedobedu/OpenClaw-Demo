@@ -108,38 +108,55 @@ for (let i = 0; i < TOTAL_TILES; i++) {
 }
 
 export const NEWS_ITEMS = [
-  { time: "9:30 AM", title: "FED RATE CUT", desc: "Markets surge as Fed cuts rates by 50bps.", type: "good" as const },
-  { time: "11:15 AM", title: "INFLATION UP", desc: "CPI data hotter than expected.", type: "bad" as const },
-  { time: "1:00 PM", title: "BTC BREAKOUT", desc: "Bitcoin breaks $100k resistance.", type: "good" as const },
-  { time: "2:45 PM", title: "TSLA RECALL", desc: "Tesla recalls 2M vehicles over software.", type: "bad" as const },
-  { time: "3:30 PM", title: "AAPL EVENT", desc: "Apple announces new AR headset features.", type: "neutral" as const },
-  { time: "4:00 PM", title: "MARKET CLOSE", desc: "SPY ends day up +2.45%.", type: "good" as const },
+  { time: "9:30 AM", title: "FED RATE CUT", desc: "Markets surge as the Fed surprises with a 50bps rate cut. All four agents scramble to reposition — momentum and value plays diverge sharply at the open.", type: "good" as const },
+  { time: "11:15 AM", title: "INFLATION UP", desc: "CPI prints hotter than expected at 3.8% YoY. Bond yields spike and growth stocks sell off hard. George's mean-reversion model flashes caution signals across the board.", type: "bad" as const },
+  { time: "1:00 PM", title: "BTC BREAKOUT", desc: "Bitcoin smashes through $100k resistance on massive volume. Ringo's social sentiment indicators lit up hours ago — Reddit and X are on fire with euphoria.", type: "good" as const },
+  { time: "2:45 PM", title: "TSLA RECALL", desc: "Tesla issues a recall affecting 2M vehicles over a software glitch. The stock gaps down 4% in minutes. John sees deep value forming while Paul cuts his position.", type: "bad" as const },
+  { time: "3:30 PM", title: "AAPL EVENT", desc: "Apple unveils new AR headset features at a surprise keynote. Market reaction is muted — investors wait for concrete revenue guidance before making big moves.", type: "neutral" as const },
+  { time: "4:00 PM", title: "MARKET CLOSE", desc: "SPY closes the session up +2.45% on heavy volume. A strong finish to a volatile day — all agents lock in their positions ahead of tomorrow's open.", type: "good" as const },
 ];
 
 export type NewsItem = (typeof NEWS_ITEMS)[number];
 
-export const TOKEN_TYPES = ["🍓", "💎", "🟡"] as const;
+export const TOKEN_TYPES = ["🍓", "💎", "🚢"] as const;
 export type TokenType = (typeof TOKEN_TYPES)[number];
 
 export const TOKEN_MAP: { tileId: number; emoji: TokenType }[] = [
   { tileId: 2, emoji: "🍓" },
   { tileId: 7, emoji: "💎" },
-  { tileId: 13, emoji: "🟡" },
+  { tileId: 13, emoji: "🚢" },
   { tileId: 18, emoji: "🍓" },
   { tileId: 22, emoji: "💎" },
-  { tileId: 28, emoji: "🟡" },
+  { tileId: 28, emoji: "🚢" },
   { tileId: 33, emoji: "🍓" },
   { tileId: 38, emoji: "💎" },
-  { tileId: 42, emoji: "🟡" },
+  { tileId: 42, emoji: "🚢" },
   { tileId: 46, emoji: "🍓" },
   { tileId: 50, emoji: "💎" },
-  { tileId: 53, emoji: "🟡" },
+  { tileId: 53, emoji: "🚢" },
   { tileId: 57, emoji: "🍓" },
   { tileId: 61, emoji: "💎" },
-  { tileId: 65, emoji: "🟡" },
+  { tileId: 65, emoji: "🚢" },
   { tileId: 68, emoji: "🍓" },
   { tileId: 71, emoji: "💎" },
-  { tileId: 74, emoji: "🟡" },
+  { tileId: 74, emoji: "🚢" },
 ];
 
 export const TOKEN_BY_TILE = new Map(TOKEN_MAP.map((t) => [t.tileId, t.emoji]));
+
+// Signature boosts — agent-specific, +10 ELO, NOT stored as tokens
+export const BOOST_ELO = 10;
+
+export const BOOST_MAP: { tileId: number; emoji: string; label: string; agentId: string }[] = [
+  { tileId: 10, emoji: "🕶️", label: "SHADES", agentId: "john" },
+  { tileId: 16, emoji: "🐊", label: "GATOR", agentId: "paul" },
+  { tileId: 24, emoji: "🎸", label: "GUITAR", agentId: "george" },
+  { tileId: 30, emoji: "⭐", label: "STAR", agentId: "ringo" },
+  { tileId: 40, emoji: "🕶️", label: "SHADES", agentId: "john" },
+  { tileId: 48, emoji: "🐊", label: "GATOR", agentId: "paul" },
+  { tileId: 55, emoji: "🎸", label: "GUITAR", agentId: "george" },
+  { tileId: 62, emoji: "⭐", label: "STAR", agentId: "ringo" },
+  { tileId: 70, emoji: "🕶️", label: "SHADES", agentId: "john" },
+];
+
+export const BOOST_BY_TILE = new Map(BOOST_MAP.map((b) => [b.tileId, b]));

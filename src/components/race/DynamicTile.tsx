@@ -1,10 +1,10 @@
 "use client";
 
-import { Suspense, useRef, useMemo } from "react";
+import { useRef, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
-import { RoundedBox, Text, Html, Billboard, useTexture } from "@react-three/drei";
+import { RoundedBox, Text, Html } from "@react-three/drei";
 import * as THREE from "three";
-import { TILE_SIZE, TOKEN_BY_TILE } from "./constants";
+import { TILE_SIZE, TOKEN_BY_TILE, BOOST_BY_TILE } from "./constants";
 import { AGENTS_CONFIG } from "@/lib/mockRaceData";
 import type { AgentId } from "@/lib/mockRaceData";
 import type { TileData } from "./types";
@@ -26,33 +26,6 @@ function ZebraStripes({ width, depth, angle }: { width: number; depth: number; a
   );
 }
 
-const BASE_PATH = process.env.__NEXT_ROUTER_BASEPATH ?? "";
-const SUBMARINE_IMG = `${BASE_PATH}/yellow-submarine.png`;
-
-/** Yellow submarine rendered as a 3D textured plane */
-function SubmarineSpriteInner({ scale = 1 }: { scale?: number }) {
-  const texture = useTexture(SUBMARINE_IMG);
-  // Image is 2118x1202, aspect ratio ~1.76
-  const w = 2.0 * scale;
-  const h = (2.0 / 1.76) * scale;
-  return (
-    <Billboard>
-      <mesh>
-        <planeGeometry args={[w, h]} />
-        <meshBasicMaterial map={texture} transparent alphaTest={0.1} depthWrite={false} />
-      </mesh>
-    </Billboard>
-  );
-}
-
-function SubmarineSprite({ scale = 1 }: { scale?: number }) {
-  return (
-    <Suspense fallback={null}>
-      <SubmarineSpriteInner scale={scale} />
-    </Suspense>
-  );
-}
-
 /** Accent edge strip on certain tiles for visual variety */
 function TileAccent({ width, depth, color }: { width: number; depth: number; color: string }) {
   return (
@@ -70,9 +43,10 @@ interface DynamicTileProps {
   activeAgentId: string | null;
   activeMovedBackward: boolean;
   claimedTileIds: Set<number>;
+  claimedBoostTileIds: Set<number>;
 }
 
-export default function DynamicTile({ tile, agentPositionsRef, tiltFactorRef, activeAgentId, activeMovedBackward, claimedTileIds }: DynamicTileProps) {
+export default function DynamicTile({ tile, agentPositionsRef, tiltFactorRef, activeAgentId, activeMovedBackward, claimedTileIds, claimedBoostTileIds }: DynamicTileProps) {
   const meshRef = useRef<THREE.Mesh>(null);
   const tempColor = useMemo(() => new THREE.Color(), []);
 
@@ -217,18 +191,18 @@ export default function DynamicTile({ tile, agentPositionsRef, tiltFactorRef, ac
       )}
       {/* Yellow Submarine image on tile decoration */}
       {tile.image && (
-        <group position={[0, 2.2, 0]}>
-          <SubmarineSprite scale={1.5} />
-        </group>
+        <Html position={[0, 2.2, 0]} center zIndexRange={[0, 0]}>
+          <img src="/visualization/yellow-submarine.svg" alt="Yellow Submarine" style={{ width: "60px", height: "auto", pointerEvents: "none" }} />
+        </Html>
       )}
       {/* Zebra crosswalk stripes */}
       {tile.style === "zebra" && <ZebraStripes width={width} depth={depth} angle={tile.angle} />}
-      {/* Collectible tokens */}
+      {/* Collectible shared tokens */}
       {TOKEN_BY_TILE.has(tile.id) && !claimedTileIds.has(tile.id) && (
-        TOKEN_BY_TILE.get(tile.id) === "🟡" ? (
-          <group position={[0, 1.5, 0]}>
-            <SubmarineSprite scale={0.8} />
-          </group>
+        TOKEN_BY_TILE.get(tile.id) === "🚢" ? (
+          <Html position={[0, 1.5, 0]} center zIndexRange={[0, 0]}>
+            <img src="/visualization/yellow-submarine.svg" alt="Yellow Submarine" style={{ width: "40px", height: "auto", filter: "drop-shadow(0 0 12px rgba(255,255,100,0.8))", pointerEvents: "none" }} />
+          </Html>
         ) : (
           <Html position={[0, 1.5, 0]} center zIndexRange={[0, 0]}>
             <div style={{ fontSize: "30px", filter: "drop-shadow(0 0 12px rgba(255,255,100,0.8))", pointerEvents: "none" }}>
@@ -236,6 +210,14 @@ export default function DynamicTile({ tile, agentPositionsRef, tiltFactorRef, ac
             </div>
           </Html>
         )
+      )}
+      {/* Boost tiles — agent-specific signature boosts */}
+      {BOOST_BY_TILE.has(tile.id) && !claimedBoostTileIds.has(tile.id) && (
+        <Html position={[0, 1.5, 0]} center zIndexRange={[0, 0]}>
+          <div style={{ fontSize: "30px", filter: "drop-shadow(0 0 12px rgba(255,215,0,0.8))", pointerEvents: "none" }}>
+            {BOOST_BY_TILE.get(tile.id)!.emoji}
+          </div>
+        </Html>
       )}
     </group>
   );

@@ -6,7 +6,7 @@ import { OrbitControls, Stars, OrthographicCamera } from "@react-three/drei";
 import * as THREE from "three";
 import { TIMELINE_EVENTS, AGENTS_CONFIG, type AgentId, type RaceEvent } from "@/lib/mockRaceData";
 import type { EloHistory, LeaderboardEntry, Prediction, Reflection, Headline } from "@/lib/db";
-import { NEWS_ITEMS, TOKEN_MAP, TILES_TO_WIN } from "./race/constants";
+import { NEWS_ITEMS, TOKEN_MAP, BOOST_MAP, BOOST_BY_TILE, BOOST_ELO, TILES_TO_WIN } from "./race/constants";
 import type { TokenType } from "./race/constants";
 import ParadoxBoard from "./race/ParadoxBoard";
 import Jumbotron from "./race/Jumbotron";
@@ -104,7 +104,7 @@ function buildNewsFromPredictions(predictions: Prediction[]) {
   return predictions.slice(0, 6).map((p) => ({
     time: p.target_date,
     title: `${p.ticker} ${p.direction}`,
-    desc: p.reasoning?.slice(0, 80) || `${p.agent_id} predicts ${p.ticker} ${p.direction} (${Math.round(p.confidence * 100)}%)`,
+    desc: p.reasoning || `${p.agent_id} predicts ${p.ticker} ${p.direction} (${Math.round(p.confidence * 100)}%)`,
     type: (p.direction === "UP" ? "good" : "bad") as "good" | "bad",
   }));
 }
@@ -242,7 +242,10 @@ export default function RaceDashboard({ eloHistory, leaderboardData, predictions
   const tokenState = useMemo(() => {
     const claimed: Record<AgentId, TokenType[]> = { john: [], paul: [], george: [], ringo: [] };
     const claimedTiles = new Set<number>();
-    let latestClaim: { agentId: AgentId; emoji: TokenType } | null = null;
+    const claimedBoostTiles = new Set<number>();
+    let latestClaim: { agentId: AgentId; emoji: TokenType; claimId: number } | null = null;
+    let latestBoost: { agentId: AgentId; emoji: string; label: string; claimId: number } | null = null;
+    let claimCounter = 0;
 
     const elos: Record<AgentId, number> = { john: 1000, paul: 1000, george: 1000, ringo: 1000 };
     const floorIdx = Math.floor(sliderIndex);
@@ -260,17 +263,27 @@ export default function RaceDashboard({ eloHistory, leaderboardData, predictions
       const prevTile = Math.floor(prevProgress * TILES_TO_WIN);
       const newTile = Math.floor(newProgress * TILES_TO_WIN);
 
-      // Collect any unclaimed tokens between the old and new tile positions
+      // Collect any unclaimed shared tokens between the old and new tile positions
       for (const token of TOKEN_MAP) {
         if (token.tileId > prevTile && token.tileId <= newTile && !claimedTiles.has(token.tileId)) {
           claimed[ev.agentId].push(token.emoji);
           claimedTiles.add(token.tileId);
-          if (i === floorIdx - 1) latestClaim = { agentId: ev.agentId, emoji: token.emoji };
+          claimCounter++;
+          if (i === floorIdx - 1) latestClaim = { agentId: ev.agentId, emoji: token.emoji, claimId: claimCounter };
+        }
+      }
+
+      // Collect boost tiles — only the matching agent can pick them up
+      for (const boost of BOOST_MAP) {
+        if (boost.tileId > prevTile && boost.tileId <= newTile && !claimedBoostTiles.has(boost.tileId) && boost.agentId === ev.agentId) {
+          claimedBoostTiles.add(boost.tileId);
+          claimCounter++;
+          if (i === floorIdx - 1) latestBoost = { agentId: ev.agentId as AgentId, emoji: boost.emoji, label: boost.label, claimId: claimCounter };
         }
       }
     }
 
-    return { claimed, claimedTiles, latestClaim };
+    return { claimed, claimedTiles, claimedBoostTiles, latestClaim, latestBoost };
   }, [sliderIndex, timelineEvents, eloRange]);
 
   function onSliderChange(val: number) {
@@ -346,7 +359,7 @@ export default function RaceDashboard({ eloHistory, leaderboardData, predictions
           <Stars radius={100} depth={50} count={1500} factor={4} saturation={1} fade speed={1} />
           <fog attach="fog" args={["#060411", 80, 200]} />
           <GroundPlane />
-          <ParadoxBoard agentPositionsRef={agentPositionsRef} activeAgentId={activeAgentId} activeMovedBackward={activeMovedBackward} claimedTileIds={tokenState.claimedTiles} />
+          <ParadoxBoard agentPositionsRef={agentPositionsRef} activeAgentId={activeAgentId} activeMovedBackward={activeMovedBackward} claimedTileIds={tokenState.claimedTiles} claimedBoostTileIds={tokenState.claimedBoostTiles} />
           <Jumbotron newsItems={newsItems} mode={jumbotronMode} activeEvent={currentState.activeEvent ?? null} />
           {(Object.keys(AGENTS_CONFIG) as AgentId[]).map((agentId, idx) => (
             <AgentAvatar
@@ -360,7 +373,8 @@ export default function RaceDashboard({ eloHistory, leaderboardData, predictions
               agentPositionsRef={agentPositionsRef}
               eloRange={eloRange}
               onOpenModal={() => openAgentModal(agentId)}
-              tokenClaim={tokenState.latestClaim?.agentId === agentId ? { emoji: tokenState.latestClaim.emoji } : null}
+              tokenClaim={tokenState.latestClaim?.agentId === agentId ? { emoji: tokenState.latestClaim.emoji, claimId: tokenState.latestClaim.claimId } : null}
+              boostClaim={tokenState.latestBoost?.agentId === agentId ? { emoji: tokenState.latestBoost.emoji, label: tokenState.latestBoost.label, claimId: tokenState.latestBoost.claimId } : null}
             />
           ))}
         </Canvas>

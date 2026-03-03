@@ -11,9 +11,10 @@ interface ParadoxBoardProps {
   activeAgentId: string | null;
   activeMovedBackward: boolean;
   claimedTileIds: Set<number>;
+  claimedBoostTileIds: Set<number>;
 }
 
-export default function ParadoxBoard({ agentPositionsRef, activeAgentId, activeMovedBackward, claimedTileIds }: ParadoxBoardProps) {
+export default function ParadoxBoard({ agentPositionsRef, activeAgentId, activeMovedBackward, claimedTileIds, claimedBoostTileIds }: ParadoxBoardProps) {
   const tiltFactorRef = useRef(0);
 
   useFrame((state) => {
@@ -32,6 +33,7 @@ export default function ParadoxBoard({ agentPositionsRef, activeAgentId, activeM
           activeAgentId={activeAgentId}
           activeMovedBackward={activeMovedBackward}
           claimedTileIds={claimedTileIds}
+          claimedBoostTileIds={claimedBoostTileIds}
         />
       ))}
     </group>

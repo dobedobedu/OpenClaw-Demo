@@ -19,7 +19,8 @@ interface AgentAvatarProps {
   agentPositionsRef: React.RefObject<Record<string, number>>;
   eloRange: EloRange;
   onOpenModal?: () => void;
-  tokenClaim: { emoji: string } | null;
+  tokenClaim: { emoji: string; claimId: number } | null;
+  boostClaim: { emoji: string; label: string; claimId: number } | null;
 }
 
 export default function AgentAvatar({
@@ -33,23 +34,54 @@ export default function AgentAvatar({
   eloRange,
   onOpenModal,
   tokenClaim,
+  boostClaim,
 }: AgentAvatarProps) {
   const groupRef = useRef<THREE.Group>(null);
   const currentEloRef = useRef(eloRange.start);
   const [visibleToken, setVisibleToken] = useState<string | null>(null);
-  const prevTokenRef = useRef<string | null>(null);
+  const prevTokenClaimIdRef = useRef<number | null>(null);
+  const [visibleBoost, setVisibleBoost] = useState<{ emoji: string; label: string } | null>(null);
+  const prevBoostClaimIdRef = useRef<number | null>(null);
+  const [showElo, setShowElo] = useState(false);
+  const prevActiveEventIdRef = useRef<string | null>(null);
 
-  // Show token claim temporarily then auto-dismiss
+  // Show token claim temporarily then auto-dismiss — compare claimId not emoji
   useEffect(() => {
-    if (tokenClaim && tokenClaim.emoji !== prevTokenRef.current) {
-      prevTokenRef.current = tokenClaim.emoji;
+    if (tokenClaim && tokenClaim.claimId !== prevTokenClaimIdRef.current) {
+      prevTokenClaimIdRef.current = tokenClaim.claimId;
       setVisibleToken(tokenClaim.emoji);
       const timer = setTimeout(() => setVisibleToken(null), 2000);
       return () => clearTimeout(timer);
     } else if (!tokenClaim) {
-      prevTokenRef.current = null;
+      prevTokenClaimIdRef.current = null;
     }
   }, [tokenClaim]);
+
+  // Show boost claim temporarily then auto-dismiss
+  useEffect(() => {
+    if (boostClaim && boostClaim.claimId !== prevBoostClaimIdRef.current) {
+      prevBoostClaimIdRef.current = boostClaim.claimId;
+      setVisibleBoost({ emoji: boostClaim.emoji, label: boostClaim.label });
+      const timer = setTimeout(() => setVisibleBoost(null), 2500);
+      return () => clearTimeout(timer);
+    } else if (!boostClaim) {
+      prevBoostClaimIdRef.current = null;
+    }
+  }, [boostClaim]);
+
+  // Show ELO change text for 1 second then auto-dismiss
+  useEffect(() => {
+    if (justMoved && activeEvent && activeEvent.id !== prevActiveEventIdRef.current) {
+      prevActiveEventIdRef.current = activeEvent.id;
+      setShowElo(true);
+      const timer = setTimeout(() => setShowElo(false), 1000);
+      return () => clearTimeout(timer);
+    }
+    if (!justMoved) {
+      prevActiveEventIdRef.current = null;
+      setShowElo(false);
+    }
+  }, [justMoved, activeEvent]);
 
   useFrame((state, delta) => {
     if (!groupRef.current) return;
@@ -96,6 +128,7 @@ export default function AgentAvatar({
 
   return (
     <group ref={groupRef}>
+      {/* Avatar head */}
       <Html position={[0, 1.2, 0]} center className="pointer-events-none z-40">
         <div
           className="flex flex-col items-center justify-end h-[150px] w-[100px] cursor-pointer pointer-events-auto"
@@ -108,8 +141,9 @@ export default function AgentAvatar({
           />
         </div>
       </Html>
-      {justMoved && activeEvent && (
-        <Html position={[0, 3, 0]} center className="pointer-events-none z-50">
+      {/* ELO change popup — auto-dismisses after 1s */}
+      {showElo && activeEvent && !visibleBoost && (
+        <Html position={[0, 3.5, 0]} center className="pointer-events-none z-50">
           <motion.div
             initial={{ opacity: 0, y: 0, scale: 0.5 }}
             animate={{ opacity: 1, y: -40, scale: 1.5 }}
@@ -128,21 +162,42 @@ export default function AgentAvatar({
           </motion.div>
         </Html>
       )}
-      {visibleToken && (
-        <Html position={[2, 2.5, 0]} center className="pointer-events-none z-50">
+      {/* Boost popup — golden "+10 ELO 🕶️ SHADES BOOST" — replaces ELO popup */}
+      {visibleBoost && (
+        <Html position={[0, 3.5, 0]} center className="pointer-events-none z-50">
           <motion.div
-            key={visibleToken}
+            key={`boost-${prevBoostClaimIdRef.current}`}
+            initial={{ opacity: 0, y: 0, scale: 0.5 }}
+            animate={{ opacity: 1, y: -40, scale: 1.5 }}
+            exit={{ opacity: 0, y: -60 }}
+            transition={{ duration: 2, ease: "easeOut" }}
+            className="font-black text-2xl whitespace-nowrap drop-shadow-[0_4px_4px_rgba(0,0,0,1)]"
+            style={{
+              color: "#fbbf24",
+              WebkitTextStroke: "1px rgba(0,0,0,0.8)",
+              textShadow: "0 0 20px rgba(251,191,36,0.8), 0 0 40px rgba(251,191,36,0.4)",
+            }}
+          >
+            +10 ELO {visibleBoost.emoji} {visibleBoost.label} BOOST
+          </motion.div>
+        </Html>
+      )}
+      {/* Token claim popup — offset left so it doesn't overlap ELO */}
+      {visibleToken && (
+        <Html position={[-1.5, 3.5, 0]} center className="pointer-events-none z-50">
+          <motion.div
+            key={`token-${prevTokenClaimIdRef.current}`}
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, y: -30, scale: 1.8 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 1.2, ease: "easeOut" }}
             className="text-3xl drop-shadow-[0_0_20px_rgba(255,255,100,0.9)]"
           >
-            {visibleToken === "🟡" ? (
+            {visibleToken === "🚢" ? (
               <img
-                src="/visualization/yellow-submarine.png"
+                src="/visualization/yellow-submarine.svg"
                 alt="Yellow Submarine"
-                style={{ width: "48px", height: "auto" }}
+                style={{ width: "40px", height: "auto" }}
               />
             ) : (
               visibleToken
