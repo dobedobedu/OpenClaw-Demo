@@ -184,50 +184,46 @@ export default function ControlBar({
               />
 
               {/* Event ticks grouped by date */}
-              <div className="flex items-end">
+              <div className="flex items-end h-10">
                 {dateGroups.map((group) => {
                   const widthPct = maxSlider > 0 ? (group.count / maxSlider) * 100 : 0;
-                  const isActiveGroup = sliderIndex > group.startIdx && sliderIndex <= group.startIdx + group.count;
 
                   return (
                     <div
                       key={group.date}
-                      className="flex flex-col items-center"
+                      className="flex items-end justify-center gap-1.5 relative group/day"
                       style={{ width: `${widthPct}%` }}
+                      title={formatDateShort(group.date)}
                     >
-                      {/* Ticks */}
-                      <div className="flex items-end justify-center gap-1 mb-1">
-                        {Array.from({ length: group.count }).map((_, j) => {
-                          const eventIdx = group.startIdx + j;
-                          const isPast = eventIdx < Math.floor(sliderIndex);
-                          const isCurrent = Math.floor(sliderIndex) === eventIdx + 1;
-                          return (
-                            <button
-                              key={eventIdx}
-                              onClick={() => onSliderChange(eventIdx + 1)}
-                              className="group/tick px-[1px]"
-                            >
-                              <div
-                                className={`w-[4px] rounded-sm transition-all ${
-                                  isCurrent
-                                    ? "h-4 bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.7)]"
-                                    : isPast
-                                      ? "h-2.5 bg-orange-400/70"
-                                      : "h-2.5 bg-gray-600 group-hover/tick:bg-gray-400"
-                                }`}
-                              />
-                            </button>
-                          );
-                        })}
+                      {Array.from({ length: group.count }).map((_, j) => {
+                        const eventIdx = group.startIdx + j;
+                        const isPast = eventIdx < Math.floor(sliderIndex);
+                        const isCurrent = Math.floor(sliderIndex) === eventIdx + 1;
+                        return (
+                          <button
+                            key={eventIdx}
+                            onClick={() => onSliderChange(eventIdx + 1)}
+                            className="group/tick px-[1px]"
+                            title={formatDateShort(group.date)}
+                          >
+                            <div
+                              className={`w-[4px] rounded-sm transition-all ${
+                                isCurrent
+                                  ? "h-5 bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.7)]"
+                                  : isPast
+                                    ? "h-3 bg-orange-400/70"
+                                    : "h-3 bg-gray-600 group-hover/tick:bg-gray-400"
+                              }`}
+                            />
+                          </button>
+                        );
+                      })}
+                      {/* Tooltip — appears on hover */}
+                      <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 opacity-0 group-hover/day:opacity-100 transition-opacity pointer-events-none">
+                        <span className="text-[10px] font-mono text-gray-300 bg-[#0a0616]/95 px-1.5 py-0.5 rounded whitespace-nowrap">
+                          {formatDateShort(group.date)}
+                        </span>
                       </div>
-                      {/* Date label */}
-                      <span
-                        className={`text-[10px] font-mono leading-none transition-colors ${
-                          isActiveGroup ? "text-yellow-300" : "text-gray-600"
-                        }`}
-                      >
-                        {formatDateShort(group.date)}
-                      </span>
                     </div>
                   );
                 })}
