@@ -97,18 +97,10 @@ function LeaderboardChip({ item, index, tokens, config }: {
   );
 }
 
-function formatDate(dateStr: string): string {
-  // Handle "Day X" format (mock data)
-  if (dateStr.startsWith("Day")) return dateStr.split(" - ")[0];
-  // Handle YYYY-MM-DD format (real data)
-  const d = new Date(dateStr + "T12:00:00");
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-}
-
-function formatDateFull(dateStr: string): string {
+function formatDateShort(dateStr: string): string {
   if (dateStr.startsWith("Day")) return dateStr.split(" - ")[0];
   const d = new Date(dateStr + "T12:00:00");
-  return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+  return `${d.getMonth() + 1}/${d.getDate()}`;
 }
 
 export default function ControlBar({
@@ -121,53 +113,29 @@ export default function ControlBar({
   resetCamera,
   tokenCounts,
   timelineEvents,
-  dateBoundaries,
 }: ControlBarProps) {
-  // Extract unique dates and their positions on the timeline
-  const dateMarkers = useMemo(() => {
-    const markers: { date: string; position: number; eventCount: number }[] = [];
+  // Group events by date: each group has a date label + array of event indices
+  const dateGroups = useMemo(() => {
+    const groups: { date: string; startIdx: number; count: number }[] = [];
     let lastDate = "";
-    let startIdx = 0;
-    let count = 0;
     timelineEvents.forEach((ev, i) => {
       if (ev.date !== lastDate) {
-        if (lastDate) {
-          markers.push({ date: lastDate, position: startIdx, eventCount: count });
-        }
+        groups.push({ date: ev.date, startIdx: i, count: 1 });
         lastDate = ev.date;
-        startIdx = i;
-        count = 1;
       } else {
-        count++;
+        groups[groups.length - 1].count++;
       }
     });
-    if (lastDate) {
-      markers.push({ date: lastDate, position: startIdx, eventCount: count });
-    }
-    return markers;
+    return groups;
   }, [timelineEvents]);
-
-  // Current active date
-  const currentDate = useMemo(() => {
-    const idx = Math.max(0, Math.floor(sliderIndex) - 1);
-    return timelineEvents[idx]?.date ?? dateMarkers[0]?.date ?? "";
-  }, [sliderIndex, timelineEvents, dateMarkers]);
-
-  // Date range string
-  const dateRange = useMemo(() => {
-    if (dateMarkers.length === 0) return "No data";
-    if (dateMarkers.length === 1) return formatDateFull(dateMarkers[0].date);
-    return `${formatDate(dateMarkers[0].date)} – ${formatDate(dateMarkers[dateMarkers.length - 1].date)}`;
-  }, [dateMarkers]);
 
   const progress = maxSlider > 0 ? (sliderIndex / maxSlider) * 100 : 0;
 
   return (
     <div className="absolute top-0 left-0 right-0 z-50 pointer-events-none">
       <div className="bg-[#0a0616]/85 backdrop-blur-xl border-b border-indigo-500/20 shadow-[0_4px_30px_rgba(99,102,241,0.1)]">
-        {/* Row 1: Leaderboard + data badge */}
+        {/* Row 1: Leaderboard + controls */}
         <div className="flex items-center gap-4 px-6 py-2.5">
-          {/* Leaderboard chips */}
           <div className="flex gap-2 flex-1 overflow-x-auto pointer-events-auto">
             {leaderboard.map((item, index) => {
               const config = AGENTS_CONFIG[item.id];
@@ -183,130 +151,111 @@ export default function ControlBar({
               );
             })}
           </div>
-
-          {/* Data badge + camera reset */}
-          <div className="flex items-center gap-2 flex-shrink-0 pointer-events-auto">
-            <div className="flex items-center gap-1.5 bg-emerald-900/40 border border-emerald-500/30 rounded-lg px-2.5 py-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[10px] font-bold text-emerald-300 uppercase tracking-wider">LIVE</span>
-            </div>
-            <div className="bg-[#0d0914] border border-indigo-500/25 rounded-lg px-2.5 py-1">
-              <span className="text-[10px] text-indigo-300 font-mono">{dateRange}</span>
-              <span className="text-[10px] text-gray-500 ml-1.5">{dateMarkers.length}d</span>
-            </div>
-            <button
-              onClick={resetCamera}
-              className="bg-indigo-900/60 backdrop-blur-md px-2 py-1.5 rounded-lg border border-indigo-500/40 hover:bg-indigo-800 transition text-[10px] font-bold uppercase tracking-widest text-indigo-300"
-            >
-              CAM
-            </button>
-          </div>
+          <button
+            onClick={resetCamera}
+            className="bg-indigo-900/60 backdrop-blur-md px-2 py-1.5 rounded-lg border border-indigo-500/40 hover:bg-indigo-800 transition text-[10px] font-bold uppercase tracking-widest text-indigo-300 pointer-events-auto flex-shrink-0"
+          >
+            CAM
+          </button>
         </div>
 
-        {/* Row 2: Visual timeline */}
-        <div className="px-6 pb-3 pt-0.5">
-          <div className="flex items-center gap-2">
-            {/* Prev button */}
+        {/* Row 2: Minimalist tick timeline — full width */}
+        <div className="relative px-6 pb-2.5 pt-0.5 pointer-events-auto">
+          <div className="flex items-end gap-0 h-8">
+            {/* Prev */}
             <button
               onClick={goPrevDay}
               disabled={sliderIndex <= 0}
-              className="bg-indigo-900/80 text-indigo-200 font-bold px-2 py-1 rounded border border-indigo-500/50 hover:bg-indigo-800 transition text-[10px] disabled:opacity-30 disabled:pointer-events-none pointer-events-auto flex-shrink-0"
+              className="text-gray-500 hover:text-gray-200 disabled:opacity-20 text-xs font-mono mr-2 pb-1 flex-shrink-0 transition"
             >
-              &larr;
+              ‹
             </button>
 
-            {/* Timeline track */}
-            <div className="flex-1 relative pointer-events-auto">
-              {/* Background track */}
-              <div className="relative h-7 flex items-center">
-                {/* Track line */}
-                <div className="absolute left-0 right-0 h-[3px] bg-gray-800 rounded-full top-1/2 -translate-y-1/2" />
+            {/* Track area */}
+            <div className="flex-1 relative">
+              {/* Thin base line */}
+              <div className="absolute bottom-[7px] left-0 right-0 h-px bg-gray-700/60" />
+              {/* Filled portion */}
+              <div
+                className="absolute bottom-[7px] left-0 h-px"
+                style={{
+                  width: `${progress}%`,
+                  background: "linear-gradient(to right, #facc15, #f97316)",
+                }}
+              />
 
-                {/* Filled track */}
-                <div
-                  className="absolute left-0 h-[3px] rounded-full top-1/2 -translate-y-1/2"
-                  style={{
-                    width: `${progress}%`,
-                    background: "linear-gradient(to right, #facc15, #f97316)",
-                  }}
-                />
+              {/* Event ticks + date labels */}
+              <div className="flex items-end h-8">
+                {dateGroups.map((group) => {
+                  // Each group gets proportional width
+                  const widthPct = maxSlider > 0 ? (group.count / maxSlider) * 100 : 0;
+                  const groupMidEvent = group.startIdx + group.count / 2;
+                  const isActiveGroup = sliderIndex > group.startIdx && sliderIndex <= group.startIdx + group.count;
 
-                {/* Date markers */}
-                {dateMarkers.map((marker, i) => {
-                  const pct = maxSlider > 0 ? (marker.position / maxSlider) * 100 : 0;
-                  const isActive = marker.date === currentDate;
                   return (
-                    <button
-                      key={marker.date}
-                      className="absolute flex flex-col items-center -translate-x-1/2 group"
-                      style={{ left: `${pct}%` }}
-                      onClick={() => onSliderChange(marker.position + 1)}
+                    <div
+                      key={group.date}
+                      className="flex flex-col items-center relative"
+                      style={{ width: `${widthPct}%` }}
                     >
-                      {/* Dot */}
-                      <div
-                        className={`w-2.5 h-2.5 rounded-full border-2 transition-all ${
-                          isActive
-                            ? "bg-yellow-400 border-yellow-300 shadow-[0_0_8px_rgba(250,204,21,0.6)] scale-125"
-                            : marker.position < sliderIndex
-                              ? "bg-orange-400 border-orange-300"
-                              : "bg-gray-600 border-gray-500 group-hover:bg-gray-400 group-hover:border-gray-300"
-                        }`}
-                      />
+                      {/* Ticks row */}
+                      <div className="flex items-end justify-center gap-[3px] mb-0.5">
+                        {Array.from({ length: group.count }).map((_, j) => {
+                          const eventIdx = group.startIdx + j;
+                          const isPast = eventIdx < Math.floor(sliderIndex);
+                          const isCurrent = Math.floor(sliderIndex) === eventIdx + 1;
+                          return (
+                            <button
+                              key={eventIdx}
+                              onClick={() => onSliderChange(eventIdx + 1)}
+                              className="group/tick"
+                            >
+                              <div
+                                className={`w-[3px] rounded-[1px] transition-all ${
+                                  isCurrent
+                                    ? "h-3 bg-yellow-400 shadow-[0_0_6px_rgba(250,204,21,0.7)]"
+                                    : isPast
+                                      ? "h-2 bg-orange-400/70"
+                                      : "h-2 bg-gray-600 group-hover/tick:bg-gray-400"
+                                }`}
+                              />
+                            </button>
+                          );
+                        })}
+                      </div>
                       {/* Date label */}
                       <span
-                        className={`text-[9px] font-mono mt-0.5 whitespace-nowrap transition-colors ${
-                          isActive ? "text-yellow-300 font-bold" : "text-gray-500 group-hover:text-gray-300"
+                        className={`text-[9px] font-mono leading-none transition-colors ${
+                          isActiveGroup ? "text-yellow-300/90" : "text-gray-600"
                         }`}
                       >
-                        {formatDate(marker.date)}
+                        {formatDateShort(group.date)}
                       </span>
-                    </button>
+                    </div>
                   );
                 })}
-
-                {/* End marker */}
-                {dateMarkers.length > 0 && (
-                  <div className="absolute right-0 flex flex-col items-center translate-x-1/2">
-                    <div className={`w-2 h-2 rounded-full ${sliderIndex >= maxSlider ? "bg-green-400 border-2 border-green-300" : "bg-gray-700 border-2 border-gray-600"}`} />
-                  </div>
-                )}
-
-                {/* Playhead / thumb */}
-                <div
-                  className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-10 pointer-events-none"
-                  style={{ left: `${progress}%` }}
-                >
-                  <div className="w-3.5 h-3.5 bg-yellow-400 rounded-full border-2 border-white shadow-[0_0_12px_rgba(250,204,21,0.8)]" />
-                </div>
-
-                {/* Invisible range input overlaid for drag interaction */}
-                <input
-                  type="range"
-                  min="0"
-                  max={maxSlider}
-                  step="0.01"
-                  value={sliderIndex}
-                  onChange={(e) => onSliderChange(parseFloat(e.target.value))}
-                  className="absolute inset-0 w-full opacity-0 cursor-pointer h-7"
-                />
               </div>
+
+              {/* Invisible range input for smooth dragging */}
+              <input
+                type="range"
+                min="0"
+                max={maxSlider}
+                step="0.01"
+                value={sliderIndex}
+                onChange={(e) => onSliderChange(parseFloat(e.target.value))}
+                className="absolute inset-0 w-full opacity-0 cursor-pointer h-8"
+              />
             </div>
 
-            {/* Next button */}
+            {/* Next */}
             <button
               onClick={goNextDay}
               disabled={sliderIndex >= maxSlider}
-              className="bg-gradient-to-r from-yellow-500 to-orange-500 text-[#060411] font-bold px-2 py-1 rounded hover:scale-105 active:scale-95 transition-all shadow-[0_0_8px_rgba(245,158,11,0.3)] text-[10px] disabled:opacity-30 disabled:pointer-events-none pointer-events-auto flex-shrink-0"
+              className="text-yellow-400 hover:text-yellow-300 disabled:opacity-20 text-xs font-mono ml-2 pb-1 flex-shrink-0 transition"
             >
-              {sliderIndex >= maxSlider ? "DONE" : "\u2192"}
+              ›
             </button>
-
-            {/* Current date display */}
-            <div className="flex-shrink-0 bg-[#0d0914] border border-yellow-500/20 rounded px-2 py-0.5 ml-1 min-w-[90px] text-center">
-              <span className="text-[10px] text-yellow-300 font-mono font-bold">
-                {currentDate ? formatDateFull(currentDate) : "START"}
-              </span>
-            </div>
           </div>
         </div>
       </div>
