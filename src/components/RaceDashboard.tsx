@@ -237,11 +237,9 @@ export default function RaceDashboard({ eloHistory, leaderboardData, predictions
     return timelineEvents.filter((ev) => ev.date === currentDay);
   }, [sliderIndex, timelineEvents]);
 
-  // Token claims — replay timeline to determine who crossed which token tile first
-  // After each event, check ALL agents' positions (not just the mover) so tokens
-  // disappear the moment any avatar visually sits on them.
+  // Token claims — only collected when an agent moves FORWARD through a token tile.
+  // Like any board game: you pick up items as you advance, not when retreating.
   const tokenState = useMemo(() => {
-    const agentIds: AgentId[] = ["john", "paul", "george", "ringo"];
     const claimed: Record<AgentId, TokenType[]> = { john: [], paul: [], george: [], ringo: [] };
     const claimedTiles = new Set<number>();
     let latestClaim: { agentId: AgentId; emoji: TokenType } | null = null;
@@ -251,19 +249,23 @@ export default function RaceDashboard({ eloHistory, leaderboardData, predictions
 
     for (let i = 0; i < floorIdx; i++) {
       const ev = timelineEvents[i];
+      const prevElo = elos[ev.agentId];
       elos[ev.agentId] += ev.eloChange;
 
-      // Check every agent's current position against unclaimed tokens
-      for (const aid of agentIds) {
-        const progress = Math.max(0, Math.min(1, (elos[aid] - eloRange.start) / (eloRange.end - eloRange.start)));
-        const tileIdx = Math.floor(progress * TILES_TO_WIN);
+      // Only collect tokens on forward moves
+      if (ev.eloChange <= 0) continue;
 
-        for (const token of TOKEN_MAP) {
-          if (token.tileId <= tileIdx && !claimedTiles.has(token.tileId)) {
-            claimed[aid].push(token.emoji);
-            claimedTiles.add(token.tileId);
-            if (i === floorIdx - 1) latestClaim = { agentId: aid, emoji: token.emoji };
-          }
+      const prevProgress = Math.max(0, Math.min(1, (prevElo - eloRange.start) / (eloRange.end - eloRange.start)));
+      const newProgress = Math.max(0, Math.min(1, (elos[ev.agentId] - eloRange.start) / (eloRange.end - eloRange.start)));
+      const prevTile = Math.floor(prevProgress * TILES_TO_WIN);
+      const newTile = Math.floor(newProgress * TILES_TO_WIN);
+
+      // Collect any unclaimed tokens between the old and new tile positions
+      for (const token of TOKEN_MAP) {
+        if (token.tileId > prevTile && token.tileId <= newTile && !claimedTiles.has(token.tileId)) {
+          claimed[ev.agentId].push(token.emoji);
+          claimedTiles.add(token.tileId);
+          if (i === floorIdx - 1) latestClaim = { agentId: ev.agentId, emoji: token.emoji };
         }
       }
     }
