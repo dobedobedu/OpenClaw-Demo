@@ -13,6 +13,7 @@ interface ControlBarProps {
   onSliderChange: (val: number) => void;
   goNextWeek: () => void;
   goPrevWeek: () => void;
+  goNextEvent: () => void;
   resetCamera: () => void;
   tokenCounts: Record<AgentId, string[]>;
   timelineEvents: RaceEvent[];
@@ -103,6 +104,16 @@ function formatDateShort(dateStr: string): string {
   return `${d.getMonth() + 1}/${d.getDate()}`;
 }
 
+function getWeekLabel(dateStr: string): string {
+  if (dateStr.startsWith("Day")) return dateStr.split(" - ")[0];
+  const d = new Date(dateStr + "T12:00:00");
+  // Get Monday of this week
+  const day = d.getDay();
+  const monday = new Date(d);
+  monday.setDate(d.getDate() - ((day + 6) % 7));
+  return `WK ${monday.getMonth() + 1}/${monday.getDate()}`;
+}
+
 export default function ControlBar({
   leaderboard,
   sliderIndex,
@@ -110,6 +121,7 @@ export default function ControlBar({
   onSliderChange,
   goNextWeek,
   goPrevWeek,
+  goNextEvent,
   resetCamera,
   tokenCounts,
   timelineEvents,
@@ -128,12 +140,20 @@ export default function ControlBar({
     return groups;
   }, [timelineEvents]);
 
+  // Current week label based on active event
+  const currentWeekLabel = useMemo(() => {
+    const idx = Math.max(0, Math.floor(sliderIndex) - 1);
+    const date = timelineEvents[idx]?.date;
+    if (!date) return "WK 1";
+    return getWeekLabel(date);
+  }, [sliderIndex, timelineEvents]);
+
   const progress = maxSlider > 0 ? (sliderIndex / maxSlider) * 100 : 0;
 
   return (
     <div className="absolute top-0 left-0 right-0 z-50 pointer-events-none">
       <div className="bg-[#0a0616]/85 backdrop-blur-xl border-b border-indigo-500/20 shadow-[0_4px_30px_rgba(99,102,241,0.1)]">
-        {/* Row 1: Leaderboard + controls */}
+        {/* Row 1: Leaderboard + CAM */}
         <div className="flex items-center gap-5 px-8 py-4">
           <div className="flex gap-3 flex-1 overflow-x-auto pointer-events-auto">
             {leaderboard.map((item, index) => {
@@ -158,32 +178,44 @@ export default function ControlBar({
           </button>
         </div>
 
-        {/* Row 2: Tick timeline — full width */}
+        {/* Row 2: [‹ WK ›] — timeline ticks — [NEXT ▸] */}
         <div className="px-8 pb-4 pt-1 pointer-events-auto">
-          <div className="flex items-end gap-0">
-            {/* Prev Week */}
-            <button
-              onClick={goPrevWeek}
-              disabled={sliderIndex <= 0}
-              className="text-gray-400 hover:text-gray-100 disabled:opacity-20 text-[10px] font-mono uppercase tracking-wider mr-4 pb-2 flex-shrink-0 transition whitespace-nowrap"
-            >
-              ‹ prev wk
-            </button>
+          <div className="flex items-center gap-0">
+            {/* Left: Week nav group */}
+            <div className="flex items-center gap-1 flex-shrink-0 mr-5">
+              <button
+                onClick={goPrevWeek}
+                disabled={sliderIndex <= 0}
+                className="text-gray-400 hover:text-white disabled:opacity-20 text-sm font-bold w-6 h-6 flex items-center justify-center rounded hover:bg-white/5 transition"
+              >
+                ‹
+              </button>
+              <span className="text-[10px] font-mono text-gray-400 uppercase tracking-wider min-w-[52px] text-center">
+                {currentWeekLabel}
+              </span>
+              <button
+                onClick={goNextWeek}
+                disabled={sliderIndex >= maxSlider}
+                className="text-gray-400 hover:text-white disabled:opacity-20 text-sm font-bold w-6 h-6 flex items-center justify-center rounded hover:bg-white/5 transition"
+              >
+                ›
+              </button>
+            </div>
 
-            {/* Track area */}
+            {/* Center: Timeline ticks */}
             <div className="flex-1 relative">
-              {/* Thin base line */}
-              <div className="absolute bottom-[10px] left-0 right-0 h-px bg-gray-700/50" />
-              {/* Filled portion */}
+              {/* Base line */}
+              <div className="absolute bottom-[12px] left-0 right-0 h-px bg-gray-700/50" />
+              {/* Filled line */}
               <div
-                className="absolute bottom-[10px] left-0 h-px"
+                className="absolute bottom-[12px] left-0 h-px"
                 style={{
                   width: `${progress}%`,
                   background: "linear-gradient(to right, #facc15, #f97316)",
                 }}
               />
 
-              {/* Event ticks grouped by date */}
+              {/* Tick groups */}
               <div className="flex items-end h-10">
                 {dateGroups.map((group) => {
                   const widthPct = maxSlider > 0 ? (group.count / maxSlider) * 100 : 0;
@@ -193,7 +225,6 @@ export default function ControlBar({
                       key={group.date}
                       className="flex items-end justify-center gap-1.5 relative group/day"
                       style={{ width: `${widthPct}%` }}
-                      title={formatDateShort(group.date)}
                     >
                       {Array.from({ length: group.count }).map((_, j) => {
                         const eventIdx = group.startIdx + j;
@@ -218,7 +249,7 @@ export default function ControlBar({
                           </button>
                         );
                       })}
-                      {/* Tooltip — appears on hover */}
+                      {/* Tooltip on hover */}
                       <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 opacity-0 group-hover/day:opacity-100 transition-opacity pointer-events-none">
                         <span className="text-[10px] font-mono text-gray-300 bg-[#0a0616]/95 px-1.5 py-0.5 rounded whitespace-nowrap">
                           {formatDateShort(group.date)}
@@ -229,7 +260,7 @@ export default function ControlBar({
                 })}
               </div>
 
-              {/* Invisible range input for smooth dragging */}
+              {/* Invisible range input */}
               <input
                 type="range"
                 min="0"
@@ -241,13 +272,13 @@ export default function ControlBar({
               />
             </div>
 
-            {/* Next Week */}
+            {/* Right: Next event button */}
             <button
-              onClick={goNextWeek}
+              onClick={goNextEvent}
               disabled={sliderIndex >= maxSlider}
-              className="text-yellow-400 hover:text-yellow-300 disabled:opacity-20 text-[10px] font-mono uppercase tracking-wider ml-4 pb-2 flex-shrink-0 transition whitespace-nowrap"
+              className="flex items-center gap-1 ml-5 flex-shrink-0 bg-gradient-to-r from-yellow-500/90 to-orange-500/90 text-[#060411] font-bold px-3 py-1.5 rounded-lg hover:scale-105 active:scale-95 transition-all shadow-[0_0_10px_rgba(245,158,11,0.2)] text-[10px] uppercase tracking-wider disabled:opacity-30 disabled:pointer-events-none whitespace-nowrap"
             >
-              next wk ›
+              NEXT <span className="text-xs">▸</span>
             </button>
           </div>
         </div>

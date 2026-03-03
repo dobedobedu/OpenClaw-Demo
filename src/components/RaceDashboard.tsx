@@ -233,7 +233,6 @@ export default function RaceDashboard({ eloHistory, leaderboardData, predictions
   }
 
   function goNextWeek() {
-    // Jump forward 5 day-boundaries (trading week)
     const currentBoundaryIdx = dateBoundaries.findIndex((b) => b > Math.floor(sliderIndex));
     if (currentBoundaryIdx === -1) return;
     const targetIdx = Math.min(currentBoundaryIdx + 4, dateBoundaries.length - 1);
@@ -242,13 +241,20 @@ export default function RaceDashboard({ eloHistory, leaderboardData, predictions
   }
 
   function goPrevWeek() {
-    // Jump backward 5 day-boundaries (trading week)
     const currentBoundaryIdx = [...dateBoundaries].reverse().findIndex((b) => b < Math.floor(sliderIndex));
     if (currentBoundaryIdx === -1) return;
     const reverseIdx = dateBoundaries.length - 1 - currentBoundaryIdx;
     const targetIdx = Math.max(reverseIdx - 4, 0);
     setSliderIndex(dateBoundaries[targetIdx]);
     setJumbotronMode("event");
+  }
+
+  function goNextEvent() {
+    const next = Math.floor(sliderIndex) + 1;
+    if (next <= timelineEvents.length) {
+      setSliderIndex(next);
+      setJumbotronMode("event");
+    }
   }
 
   function resetCamera() {
@@ -321,6 +327,7 @@ export default function RaceDashboard({ eloHistory, leaderboardData, predictions
         onSliderChange={onSliderChange}
         goNextWeek={goNextWeek}
         goPrevWeek={goPrevWeek}
+        goNextEvent={goNextEvent}
         resetCamera={resetCamera}
         tokenCounts={tokenState.claimed}
         timelineEvents={timelineEvents}
