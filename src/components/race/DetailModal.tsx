@@ -82,11 +82,13 @@ export function AgentProfileContent({
   leaderboard,
   recentEvents,
   onClose,
+  onOpenChat,
 }: {
   agentId: AgentId;
   leaderboard: LeaderboardItem[];
   recentEvents: RaceEvent[];
   onClose: () => void;
+  onOpenChat?: () => void;
 }) {
   const config = AGENTS_CONFIG[agentId];
   const rank = leaderboard.findIndex((item) => item.id === agentId) + 1;
@@ -128,8 +130,10 @@ export function AgentProfileContent({
       {/* Chat link */}
       <button
         onClick={() => {
-          const url = process.env.NEXT_PUBLIC_OPENCLAW_URL || "#";
-          if (url !== "#") window.open(url, "_blank");
+          if (onOpenChat) {
+            onClose();
+            onOpenChat();
+          }
         }}
         className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-[#060411] font-bold py-2 rounded-lg hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_8px_rgba(245,158,11,0.3)] text-sm"
       >

@@ -14,6 +14,7 @@ import AgentAvatar from "./race/AgentAvatar";
 import ControlBar from "./race/ControlBar";
 import BottomTicker from "./race/BottomTicker";
 import DetailModal, { EventDetailContent, AgentProfileContent } from "./race/DetailModal";
+import ChatPanel from "./race/ChatPanel";
 
 // Static CSS for marquee animation — no user input, safe to inject
 const MARQUEE_CSS = `@keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }`;
@@ -158,6 +159,7 @@ export default function RaceDashboard({ eloHistory, leaderboardData, predictions
   const [mounted, setMounted] = useState(false);
   const [jumbotronMode, setJumbotronMode] = useState<"news" | "event">("news");
   const [modalContent, setModalContent] = useState<ReactNode | null>(null);
+  const [chatAgentId, setChatAgentId] = useState<AgentId | null>(null);
   const controlsRef = useRef<any>(null);
   const agentPositionsRef = useRef<Record<string, number>>({ john: 0, paul: 0, george: 0, ringo: 0 });
 
@@ -303,6 +305,7 @@ export default function RaceDashboard({ eloHistory, leaderboardData, predictions
         leaderboard={currentState.leaderboard}
         recentEvents={currentState.chatLog}
         onClose={() => setModalContent(null)}
+        onOpenChat={() => setChatAgentId(agentId)}
       />
     );
   }
@@ -366,6 +369,9 @@ export default function RaceDashboard({ eloHistory, leaderboardData, predictions
 
       {/* Detail Modal */}
       <DetailModal content={modalContent} onClose={() => setModalContent(null)} />
+
+      {/* Chat Side Panel */}
+      <ChatPanel agentId={chatAgentId} onClose={() => setChatAgentId(null)} />
     </div>
   );
 }
