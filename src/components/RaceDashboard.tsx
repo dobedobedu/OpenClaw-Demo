@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect, useRef, type ReactNode } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Stars, OrthographicCamera } from "@react-three/drei";
+import * as THREE from "three";
 import { TIMELINE_EVENTS, AGENTS_CONFIG, type AgentId, type RaceEvent } from "@/lib/mockRaceData";
 import type { EloHistory, LeaderboardEntry, Prediction } from "@/lib/db";
 import { NEWS_ITEMS, TOKEN_MAP, TILES_TO_WIN } from "./race/constants";
@@ -63,6 +64,59 @@ function buildNewsFromPredictions(predictions: Prediction[]) {
     desc: p.reasoning?.slice(0, 80) || `${p.agent_id} predicts ${p.ticker} ${p.direction} (${Math.round(p.confidence * 100)}%)`,
     type: (p.direction === "UP" ? "good" : "bad") as "good" | "bad",
   }));
+}
+
+/** Subtle ground plane with grid micro-texture */
+function GroundPlane() {
+  const canvas = useMemo(() => {
+    if (typeof document === "undefined") return null;
+    const c = document.createElement("canvas");
+    c.width = 512;
+    c.height = 512;
+    const ctx = c.getContext("2d")!;
+    // Dark base
+    ctx.fillStyle = "#08061a";
+    ctx.fillRect(0, 0, 512, 512);
+    // Subtle grid lines
+    ctx.strokeStyle = "rgba(99, 102, 241, 0.06)";
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 512; i += 32) {
+      ctx.beginPath();
+      ctx.moveTo(i, 0);
+      ctx.lineTo(i, 512);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(0, i);
+      ctx.lineTo(512, i);
+      ctx.stroke();
+    }
+    // Scattered noise dots
+    for (let i = 0; i < 300; i++) {
+      const x = Math.random() * 512;
+      const y = Math.random() * 512;
+      const alpha = Math.random() * 0.08;
+      ctx.fillStyle = `rgba(139, 92, 246, ${alpha})`;
+      ctx.fillRect(x, y, 1, 1);
+    }
+    return c;
+  }, []);
+
+  const texture = useMemo(() => {
+    if (!canvas) return null;
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(12, 12);
+    return tex;
+  }, [canvas]);
+
+  if (!texture) return null;
+  return (
+    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1, 0]}>
+      <planeGeometry args={[400, 400]} />
+      <meshBasicMaterial map={texture} transparent opacity={0.6} />
+    </mesh>
+  );
 }
 
 const AGENT_OFFSETS = [
@@ -234,6 +288,8 @@ export default function RaceDashboard({ eloHistory, leaderboardData, predictions
           <OrthographicCamera makeDefault position={[50, 60, 50]} zoom={15} near={-500} far={500} />
           <OrbitControls ref={controlsRef} target={[0, 10, 0]} makeDefault minZoom={8} maxZoom={40} />
           <Stars radius={100} depth={50} count={1500} factor={4} saturation={1} fade speed={1} />
+          <fog attach="fog" args={["#060411", 80, 200]} />
+          <GroundPlane />
           <ParadoxBoard agentPositionsRef={agentPositionsRef} activeAgentId={activeAgentId} activeMovedBackward={activeMovedBackward} claimedTileIds={tokenState.claimedTiles} />
           <Jumbotron newsItems={newsItems} mode={jumbotronMode} activeEvent={currentState.activeEvent ?? null} />
           {(Object.keys(AGENTS_CONFIG) as AgentId[]).map((agentId, idx) => (
@@ -264,6 +320,8 @@ export default function RaceDashboard({ eloHistory, leaderboardData, predictions
         goPrevDay={goPrevDay}
         resetCamera={resetCamera}
         tokenCounts={tokenState.claimed}
+        timelineEvents={timelineEvents}
+        dateBoundaries={dateBoundaries}
       />
 
       {/* Bottom Ticker */}
