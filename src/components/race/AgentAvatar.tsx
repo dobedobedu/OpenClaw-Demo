@@ -40,46 +40,48 @@ export default function AgentAvatar({
   const currentEloRef = useRef(eloRange.start);
   const [visibleToken, setVisibleToken] = useState<string | null>(null);
   const prevTokenClaimIdRef = useRef<number | null>(null);
+  const tokenTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [visibleBoost, setVisibleBoost] = useState<{ emoji: string; label: string } | null>(null);
   const prevBoostClaimIdRef = useRef<number | null>(null);
+  const boostTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showElo, setShowElo] = useState(false);
   const prevActiveEventIdRef = useRef<string | null>(null);
+  const eloTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Show token claim temporarily then auto-dismiss — compare claimId not emoji
+  // Show token claim temporarily — timer stored in ref so slider re-renders don't cancel it
   useEffect(() => {
     if (tokenClaim && tokenClaim.claimId !== prevTokenClaimIdRef.current) {
       prevTokenClaimIdRef.current = tokenClaim.claimId;
       setVisibleToken(tokenClaim.emoji);
-      const timer = setTimeout(() => setVisibleToken(null), 2000);
-      return () => clearTimeout(timer);
+      if (tokenTimerRef.current) clearTimeout(tokenTimerRef.current);
+      tokenTimerRef.current = setTimeout(() => setVisibleToken(null), 2000);
     } else if (!tokenClaim) {
       prevTokenClaimIdRef.current = null;
     }
   }, [tokenClaim]);
 
-  // Show boost claim temporarily then auto-dismiss
+  // Show boost claim temporarily
   useEffect(() => {
     if (boostClaim && boostClaim.claimId !== prevBoostClaimIdRef.current) {
       prevBoostClaimIdRef.current = boostClaim.claimId;
       setVisibleBoost({ emoji: boostClaim.emoji, label: boostClaim.label });
-      const timer = setTimeout(() => setVisibleBoost(null), 2500);
-      return () => clearTimeout(timer);
+      if (boostTimerRef.current) clearTimeout(boostTimerRef.current);
+      boostTimerRef.current = setTimeout(() => setVisibleBoost(null), 2500);
     } else if (!boostClaim) {
       prevBoostClaimIdRef.current = null;
     }
   }, [boostClaim]);
 
-  // Show ELO change text for 1 second then auto-dismiss
+  // Show ELO change text temporarily
   useEffect(() => {
     if (justMoved && activeEvent && activeEvent.id !== prevActiveEventIdRef.current) {
       prevActiveEventIdRef.current = activeEvent.id;
       setShowElo(true);
-      const timer = setTimeout(() => setShowElo(false), 1000);
-      return () => clearTimeout(timer);
+      if (eloTimerRef.current) clearTimeout(eloTimerRef.current);
+      eloTimerRef.current = setTimeout(() => setShowElo(false), 1000);
     }
     if (!justMoved) {
       prevActiveEventIdRef.current = null;
-      setShowElo(false);
     }
   }, [justMoved, activeEvent]);
 
