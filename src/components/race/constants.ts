@@ -108,12 +108,12 @@ for (let i = 0; i < TOTAL_TILES; i++) {
 }
 
 export const NEWS_ITEMS = [
-  { time: "9:30 AM", title: "FED RATE CUT", desc: "Markets surge as the Fed surprises with a 50bps rate cut. All four agents scramble to reposition — momentum and value plays diverge sharply at the open.", type: "good" as const },
-  { time: "11:15 AM", title: "INFLATION UP", desc: "CPI prints hotter than expected at 3.8% YoY. Bond yields spike and growth stocks sell off hard. George's mean-reversion model flashes caution signals across the board.", type: "bad" as const },
-  { time: "1:00 PM", title: "BTC BREAKOUT", desc: "Bitcoin smashes through $100k resistance on massive volume. Ringo's social sentiment indicators lit up hours ago — Reddit and X are on fire with euphoria.", type: "good" as const },
-  { time: "2:45 PM", title: "TSLA RECALL", desc: "Tesla issues a recall affecting 2M vehicles over a software glitch. The stock gaps down 4% in minutes. John sees deep value forming while Paul cuts his position.", type: "bad" as const },
-  { time: "3:30 PM", title: "AAPL EVENT", desc: "Apple unveils new AR headset features at a surprise keynote. Market reaction is muted — investors wait for concrete revenue guidance before making big moves.", type: "neutral" as const },
-  { time: "4:00 PM", title: "MARKET CLOSE", desc: "SPY closes the session up +2.45% on heavy volume. A strong finish to a volatile day — all agents lock in their positions ahead of tomorrow's open.", type: "good" as const },
+  { time: "9:30 AM", title: "FED RATE CUT", desc: "Fed surprises with 50bps cut — markets surge at the open.", type: "good" as const },
+  { time: "11:15 AM", title: "INFLATION UP", desc: "CPI prints 3.8% YoY — bond yields spike, growth stocks sell off.", type: "bad" as const },
+  { time: "1:00 PM", title: "BTC BREAKOUT", desc: "Bitcoin clears $100k on massive volume — sentiment is on fire.", type: "good" as const },
+  { time: "2:45 PM", title: "TSLA RECALL", desc: "Tesla recalls 2M vehicles — stock gaps down 4% in minutes.", type: "bad" as const },
+  { time: "3:30 PM", title: "AAPL EVENT", desc: "Apple unveils AR headset features — market waits for revenue guidance.", type: "neutral" as const },
+  { time: "4:00 PM", title: "MARKET CLOSE", desc: "SPY closes up +2.45% — agents lock in positions ahead of tomorrow.", type: "good" as const },
 ];
 
 export type NewsItem = (typeof NEWS_ITEMS)[number];

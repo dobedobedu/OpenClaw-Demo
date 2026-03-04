@@ -100,11 +100,19 @@ function buildTimelineFromEloHistory(eloHistory: EloHistory[], reflections?: Ref
   return events;
 }
 
+function truncateReasoning(text: string, maxLen = 80): string {
+  if (!text) return text;
+  // Use first sentence if it fits, otherwise hard-truncate
+  const firstSentence = text.split(/[.!?]/)[0].trim();
+  if (firstSentence.length <= maxLen) return firstSentence;
+  return text.slice(0, maxLen - 1).trimEnd() + "…";
+}
+
 function buildNewsFromPredictions(predictions: Prediction[]) {
   return predictions.slice(0, 6).map((p) => ({
     time: p.target_date,
     title: `${p.ticker} ${p.direction}`,
-    desc: p.reasoning || `${p.agent_id} predicts ${p.ticker} ${p.direction} (${Math.round(p.confidence * 100)}%)`,
+    desc: truncateReasoning(p.reasoning) || `${p.agent_id}: ${p.ticker} ${p.direction} (${Math.round(p.confidence * 100)}% conf)`,
     type: (p.direction === "UP" ? "good" : "bad") as "good" | "bad",
   }));
 }
