@@ -223,13 +223,13 @@ function EventCardContent({ event }: { event: RaceEvent }) {
       <Text position={[0, 2.6, 0.1]} fontSize={1.2} color="#111111" anchorX="left" anchorY="middle" fontWeight="bold">
         {agentConfig.name.toUpperCase()}
       </Text>
-      {/* Headline — score line */}
-      <Text position={[0, 0.4, 0.1]} fontSize={0.75} color="#1a1a1a" anchorX="left" anchorY="middle" maxWidth={13} lineHeight={1.4} fontWeight="bold">
+      {/* Headline — score line (max 2 lines) */}
+      <Text position={[0, 0.8, 0.1]} fontSize={0.7} color="#1a1a1a" anchorX="left" anchorY="top" maxWidth={13} lineHeight={1.35} fontWeight="bold">
         {event.action}
       </Text>
-      {/* Reasoning — reflection text below */}
+      {/* Reasoning — reflection text, anchored from bottom so it never overlaps */}
       {event.reasoning && event.reasoning.length > 3 && (
-        <Text position={[0, -2.2, 0.1]} fontSize={0.55} color="#333333" anchorX="left" anchorY="middle" maxWidth={13} lineHeight={1.4}>
+        <Text position={[0, -3.2, 0.1]} fontSize={0.5} color="#444444" anchorX="left" anchorY="middle" maxWidth={13} lineHeight={1.3}>
           {event.reasoning}
         </Text>
       )}

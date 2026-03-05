@@ -80,28 +80,24 @@ function buildTimelineFromEloHistory(eloHistory: EloHistory[], reflections?: Ref
         let reasoning = "";
 
         if (headline) {
-          action = headline;
+          // Truncate headline to fit the card — first clause before ; or , or hard cut at 55 chars
+          const shortHeadline = headline.split(/[;]/)[0].trim();
+          action = shortHeadline.length <= 55 ? shortHeadline : truncateReasoning(shortHeadline, 55);
+          // No reasoning when headline is shown — it IS the explanation
         } else if (ref) {
           action = `${ref.correct_count}/${ref.total_count} correct — ${delta > 0 ? "gained" : "lost"} ${Math.abs(delta)} ELO`;
-        } else {
-          action = delta > 0 ? `gained ${delta} ELO` : `lost ${Math.abs(delta)} ELO`;
-        }
-
-        if (ref) {
           const refWell = ref.what_went_well && ref.what_went_well.length > 3 ? ref.what_went_well : "";
           const refWrong = ref.what_went_wrong && ref.what_went_wrong.length > 3 ? ref.what_went_wrong : "";
           if (delta > 0 && refWell) {
-            reasoning = refWell;
+            reasoning = truncateReasoning(refWell, 70);
           } else if (delta < 0 && refWrong) {
-            reasoning = refWrong;
+            reasoning = truncateReasoning(refWrong, 70);
           } else if (ref.adjustments && ref.adjustments.length > 3) {
-            reasoning = ref.adjustments;
+            reasoning = truncateReasoning(ref.adjustments, 70);
           }
-        }
-
-        // Fall back to prediction reasoning if no reflection text
-        if (!reasoning) {
-          reasoning = predictionReasoningMap.get(`${agentId}:${currDate}`) ?? "";
+        } else {
+          action = delta > 0 ? `gained ${delta} ELO` : `lost ${Math.abs(delta)} ELO`;
+          reasoning = truncateReasoning(predictionReasoningMap.get(`${agentId}:${currDate}`) ?? "", 70);
         }
 
         events.push({
