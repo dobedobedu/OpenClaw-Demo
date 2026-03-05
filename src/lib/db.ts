@@ -135,6 +135,10 @@ export function getEloHistory(days: number = 30): EloHistory[] {
     .all(`-${days}`) as EloHistory[];
 }
 
+export function getReflectionDates(): string[] {
+  return (getDb().prepare("SELECT DISTINCT date FROM reflections ORDER BY date DESC LIMIT 30").all() as { date: string }[]).map(r => r.date);
+}
+
 export function getReflections(
   agentId?: string,
   date?: string
