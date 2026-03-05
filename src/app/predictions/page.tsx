@@ -94,13 +94,13 @@ export default async function PredictionsPage({
                           className="text-lg font-bold"
                           style={{
                             color: isUp ? "#10b981" : "#ef4444",
-                            opacity: 0.5 + pred.confidence * 0.5,
+                            opacity: 0.5 + (pred.confidence / 100) * 0.5,
                           }}
                         >
                           {isUp ? "\u25B2" : "\u25BC"}
                         </span>
                         <span className="font-mono text-xs text-gray-400">
-                          {(pred.confidence * 100).toFixed(0)}%
+                          {pred.confidence.toFixed(0)}%
                         </span>
                       </div>
                     </div>
@@ -174,7 +174,7 @@ export default async function PredictionsPage({
                             }}
                           >
                             {pred.direction === "UP" ? "\u25B2" : "\u25BC"}{" "}
-                            {(pred.confidence * 100).toFixed(0)}%
+                            {pred.confidence.toFixed(0)}%
                           </span>
                         </div>
                         <p className="text-gray-500 leading-relaxed">
