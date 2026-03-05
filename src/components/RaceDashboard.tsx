@@ -27,7 +27,7 @@ interface RaceDashboardProps {
   headlines?: Headline[];
 }
 
-function buildTimelineFromEloHistory(eloHistory: EloHistory[], reflections?: Reflection[], headlines?: Headline[]): RaceEvent[] {
+function buildTimelineFromEloHistory(eloHistory: EloHistory[], reflections?: Reflection[], headlines?: Headline[], predictions?: Prediction[]): RaceEvent[] {
   const byDate: Record<string, Record<string, number>> = {};
   for (const row of eloHistory) {
     if (!byDate[row.date]) byDate[row.date] = {};
@@ -47,6 +47,17 @@ function buildTimelineFromEloHistory(eloHistory: EloHistory[], reflections?: Ref
   if (headlines) {
     for (const h of headlines) {
       headlineMap.set(`${h.agent_id}:${h.date}`, h.headline);
+    }
+  }
+
+  // Index predictions by agent+target_date for fallback reasoning
+  const predictionReasoningMap = new Map<string, string>();
+  if (predictions) {
+    for (const p of predictions) {
+      const key = `${p.agent_id}:${p.target_date}`;
+      if (!predictionReasoningMap.has(key) && p.reasoning) {
+        predictionReasoningMap.set(key, truncateReasoning(p.reasoning));
+      }
     }
   }
 
@@ -77,13 +88,20 @@ function buildTimelineFromEloHistory(eloHistory: EloHistory[], reflections?: Ref
         }
 
         if (ref) {
-          if (delta > 0 && ref.what_went_well) {
-            reasoning = ref.what_went_well;
-          } else if (delta < 0 && ref.what_went_wrong) {
-            reasoning = ref.what_went_wrong;
-          } else if (ref.adjustments) {
+          const refWell = ref.what_went_well && ref.what_went_well.length > 3 ? ref.what_went_well : "";
+          const refWrong = ref.what_went_wrong && ref.what_went_wrong.length > 3 ? ref.what_went_wrong : "";
+          if (delta > 0 && refWell) {
+            reasoning = refWell;
+          } else if (delta < 0 && refWrong) {
+            reasoning = refWrong;
+          } else if (ref.adjustments && ref.adjustments.length > 3) {
             reasoning = ref.adjustments;
           }
+        }
+
+        // Fall back to prediction reasoning if no reflection text
+        if (!reasoning) {
+          reasoning = predictionReasoningMap.get(`${agentId}:${currDate}`) ?? "";
         }
 
         events.push({
@@ -189,9 +207,9 @@ export default function RaceDashboard({ eloHistory, leaderboardData, predictions
   useEffect(() => setMounted(true), []);
 
   const timelineEvents = useMemo(() => {
-    if (eloHistory && eloHistory.length > 0) return buildTimelineFromEloHistory(eloHistory, reflections ?? undefined, headlines ?? undefined);
+    if (eloHistory && eloHistory.length > 0) return buildTimelineFromEloHistory(eloHistory, reflections ?? undefined, headlines ?? undefined, predictions ?? undefined);
     return TIMELINE_EVENTS;
-  }, [eloHistory, reflections, headlines]);
+  }, [eloHistory, reflections, headlines, predictions]);
 
   const newsItems = useMemo(() => {
     if (predictions && predictions.length > 0) return buildNewsFromPredictions(predictions);

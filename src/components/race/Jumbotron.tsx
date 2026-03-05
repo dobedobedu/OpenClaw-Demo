@@ -223,10 +223,16 @@ function EventCardContent({ event }: { event: RaceEvent }) {
       <Text position={[0, 2.6, 0.1]} fontSize={1.2} color="#111111" anchorX="left" anchorY="middle" fontWeight="bold">
         {agentConfig.name.toUpperCase()}
       </Text>
-      {/* Headline — the main attraction */}
+      {/* Headline — score line */}
       <Text position={[0, 0.4, 0.1]} fontSize={0.75} color="#1a1a1a" anchorX="left" anchorY="middle" maxWidth={13} lineHeight={1.4} fontWeight="bold">
         {event.action}
       </Text>
+      {/* Reasoning — reflection text below */}
+      {event.reasoning && event.reasoning.length > 3 && (
+        <Text position={[0, -2.2, 0.1]} fontSize={0.55} color="#333333" anchorX="left" anchorY="middle" maxWidth={13} lineHeight={1.4}>
+          {event.reasoning}
+        </Text>
+      )}
     </group>
   );
 }
