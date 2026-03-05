@@ -100,7 +100,7 @@ export default async function PredictionsPage({
                           {isUp ? "\u25B2" : "\u25BC"}
                         </span>
                         <span className="font-mono text-xs text-gray-400">
-                          {pred.confidence.toFixed(0)}%
+                          {pred.confidence.toFixed(0)}% conf
                         </span>
                       </div>
                     </div>
@@ -174,7 +174,7 @@ export default async function PredictionsPage({
                             }}
                           >
                             {pred.direction === "UP" ? "\u25B2" : "\u25BC"}{" "}
-                            {pred.confidence.toFixed(0)}%
+                            {pred.confidence.toFixed(0)}% conf
                           </span>
                         </div>
                         <p className="text-gray-500 leading-relaxed">
